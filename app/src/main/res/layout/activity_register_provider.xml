@@ -67,15 +67,6 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <ImageView
-                android:layout_width="80dp"
-                android:layout_height="80dp"
-                android:layout_gravity="center"
-                android:layout_marginTop="16dp"
-                android:layout_marginBottom="24dp"
-                android:src="@drawable/logo_perto_de_mim"
-                android:contentDescription="@string/app_name" />
-
             <!-- BLOCO 1: Dados da Empresa -->
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
