@@ -43,6 +43,15 @@
         <activity
             android:name=".RegisterProviderActivity"
             android:exported="false" />
+        <activity
+            android:name=".VerifyCodeActivity"
+            android:exported="false" />
+        <activity
+            android:name=".NewPasswordActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ProfileActivity"
+            android:exported="false" />
     </application>
 
 </manifest>

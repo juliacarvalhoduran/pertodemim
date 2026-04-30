@@ -2,9 +2,9 @@
     <!-- Base application theme. -->
     <style name="Base.Theme.PertoDeMim" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Customize your dark theme here. -->
-        <item name="colorPrimary">@color/primary_teal</item>
-        <item name="colorSecondary">@color/primary_orange</item>
-        <item name="android:statusBarColor">@color/header_teal</item>
+        <item name="colorPrimary">@color/verde_petroleo_profundo</item>
+        <item name="colorSecondary">@color/terracota</item>
+        <item name="android:statusBarColor">@color/verde_petroleo_profundo</item>
         <item name="colorSecondaryContainer">@android:color/transparent</item>
     </style>
 </resources>

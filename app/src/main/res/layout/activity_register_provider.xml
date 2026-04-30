@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background_beige"
+    android:background="@color/off_white"
     tools:context=".RegisterProviderActivity">
 
     <!-- Header Fixo no Topo -->
@@ -12,7 +12,7 @@
         android:id="@+id/header"
         android:layout_width="match_parent"
         android:layout_height="80dp"
-        android:background="@color/header_teal"
+        android:background="@color/verde_petroleo_profundo"
         app:layout_constraintTop_toTopOf="parent">
 
         <ImageView
@@ -22,7 +22,7 @@
             android:layout_marginStart="16dp"
             android:padding="8dp"
             android:src="@drawable/ic_back_arrow_white"
-            android:contentDescription="@string/app_name"
+            android:contentDescription="@string/voltar"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
@@ -91,36 +91,38 @@
                     android:orientation="vertical"
                     android:padding="16dp">
 
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/dados_empresa" android:textColor="@color/primary_teal" android:textSize="18sp" android:textStyle="bold" android:layout_marginBottom="16dp"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/dados_empresa" android:textColor="@color/verde_petroleo_profundo" android:textSize="18sp" android:textStyle="bold" android:layout_marginBottom="16dp"/>
 
-                    <com.google.android.material.textfield.TextInputLayout style="@style/Widget.Material3.TextInputLayout.OutlinedBox" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="12dp" app:boxCornerRadiusTopStart="12dp" app:boxCornerRadiusTopEnd="12dp" app:boxCornerRadiusBottomStart="12dp" app:boxCornerRadiusBottomEnd="12dp" app:hintEnabled="false">
-                        <com.google.android.material.textfield.TextInputEditText android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="text"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/nome_fantasia_obrig" android:textColor="@color/verde_petroleo_profundo" android:textStyle="bold"/>
+                    <com.google.android.material.textfield.TextInputLayout android:id="@+id/tilNomeFantasia" style="@style/Widget.Material3.TextInputLayout.OutlinedBox" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="12dp" app:boxCornerRadiusTopStart="12dp" app:boxCornerRadiusTopEnd="12dp" app:boxCornerRadiusBottomStart="12dp" app:boxCornerRadiusBottomEnd="12dp" app:hintEnabled="false" app:errorEnabled="true">
+                        <com.google.android.material.textfield.TextInputEditText android:id="@+id/editNomeFantasia" android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="text"/>
                     </com.google.android.material.textfield.TextInputLayout>
 
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/razao_social" android:textColor="@color/primary_teal" android:textStyle="bold"/>
-                    <com.google.android.material.textfield.TextInputLayout style="@style/Widget.Material3.TextInputLayout.OutlinedBox" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="12dp" app:boxCornerRadiusTopStart="12dp" app:boxCornerRadiusTopEnd="12dp" app:boxCornerRadiusBottomStart="12dp" app:boxCornerRadiusBottomEnd="12dp" app:hintEnabled="false">
-                        <com.google.android.material.textfield.TextInputEditText android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="text"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/razao_social_obrig" android:textColor="@color/verde_petroleo_profundo" android:textStyle="bold"/>
+                    <com.google.android.material.textfield.TextInputLayout android:id="@+id/tilRazaoSocial" style="@style/Widget.Material3.TextInputLayout.OutlinedBox" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="12dp" app:boxCornerRadiusTopStart="12dp" app:boxCornerRadiusTopEnd="12dp" app:boxCornerRadiusBottomStart="12dp" app:boxCornerRadiusBottomEnd="12dp" app:hintEnabled="false" app:errorEnabled="true">
+                        <com.google.android.material.textfield.TextInputEditText android:id="@+id/editRazaoSocial" android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="text"/>
                     </com.google.android.material.textfield.TextInputLayout>
 
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/cnpj" android:textColor="@color/primary_teal" android:textStyle="bold"/>
-                    <com.google.android.material.textfield.TextInputLayout style="@style/Widget.Material3.TextInputLayout.OutlinedBox" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="12dp" app:boxCornerRadiusTopStart="12dp" app:boxCornerRadiusTopEnd="12dp" app:boxCornerRadiusBottomStart="12dp" app:boxCornerRadiusBottomEnd="12dp" app:hintEnabled="false">
-                        <com.google.android.material.textfield.TextInputEditText android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="number"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/cnpj_obrig" android:textColor="@color/verde_petroleo_profundo" android:textStyle="bold"/>
+                    <com.google.android.material.textfield.TextInputLayout android:id="@+id/tilCNPJ" style="@style/Widget.Material3.TextInputLayout.OutlinedBox" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="12dp" app:boxCornerRadiusTopStart="12dp" app:boxCornerRadiusTopEnd="12dp" app:boxCornerRadiusBottomStart="12dp" app:boxCornerRadiusBottomEnd="12dp" app:hintEnabled="false" app:errorEnabled="true">
+                        <com.google.android.material.textfield.TextInputEditText android:id="@+id/editCNPJ" android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="number" android:maxLength="14"/>
                     </com.google.android.material.textfield.TextInputLayout>
 
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/categoria" android:textColor="@color/primary_teal" android:textStyle="bold"/>
-                    <com.google.android.material.textfield.TextInputLayout style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="12dp" app:boxCornerRadiusTopStart="12dp" app:boxCornerRadiusTopEnd="12dp" app:boxCornerRadiusBottomStart="12dp" app:boxCornerRadiusBottomEnd="12dp" app:hintEnabled="false">
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/categoria_obrig" android:textColor="@color/verde_petroleo_profundo" android:textStyle="bold"/>
+                    <com.google.android.material.textfield.TextInputLayout android:id="@+id/tilCategoria" style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="12dp" app:boxCornerRadiusTopStart="12dp" app:boxCornerRadiusTopEnd="12dp" app:boxCornerRadiusBottomStart="12dp" app:boxCornerRadiusBottomEnd="12dp" app:hintEnabled="false" app:errorEnabled="true">
                         <AutoCompleteTextView
-                            android:id="@+id/autoCompleteCategoria"
+                            android:id="@+id/editCategoria"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:hint="@string/selecione_categoria"
-                            android:inputType="none"
-                            android:popupBackground="@color/white"/>
+                            android:focusable="false"
+                            android:clickable="true"
+                            android:inputType="none"/>
                     </com.google.android.material.textfield.TextInputLayout>
 
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/descricao_servicos" android:textColor="@color/primary_teal" android:textStyle="bold"/>
-                    <com.google.android.material.textfield.TextInputLayout style="@style/Widget.Material3.TextInputLayout.OutlinedBox" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="12dp" app:boxCornerRadiusTopStart="12dp" app:boxCornerRadiusTopEnd="12dp" app:boxCornerRadiusBottomStart="12dp" app:boxCornerRadiusBottomEnd="12dp" app:hintEnabled="false">
-                        <com.google.android.material.textfield.TextInputEditText android:layout_width="match_parent" android:layout_height="120dp" android:gravity="top" android:inputType="textMultiLine"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/descricao_servicos_obrig" android:textColor="@color/verde_petroleo_profundo" android:textStyle="bold"/>
+                    <com.google.android.material.textfield.TextInputLayout android:id="@+id/tilDescricao" style="@style/Widget.Material3.TextInputLayout.OutlinedBox" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="12dp" app:boxCornerRadiusTopStart="12dp" app:boxCornerRadiusTopEnd="12dp" app:boxCornerRadiusBottomStart="12dp" app:boxCornerRadiusBottomEnd="12dp" app:hintEnabled="false" app:errorEnabled="true">
+                        <com.google.android.material.textfield.TextInputEditText android:id="@+id/editDescricao" android:layout_width="match_parent" android:layout_height="120dp" android:gravity="top" android:inputType="textMultiLine"/>
                     </com.google.android.material.textfield.TextInputLayout>
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
@@ -138,25 +140,21 @@
                     android:orientation="vertical"
                     android:padding="16dp">
 
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/contato" android:textColor="@color/primary_teal" android:textSize="18sp" android:textStyle="bold" android:layout_marginBottom="16dp"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/contato" android:textColor="@color/verde_petroleo_profundo" android:textSize="18sp" android:textStyle="bold" android:layout_marginBottom="16dp"/>
 
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/email" android:textColor="@color/primary_teal" android:textStyle="bold"/>
-                    <com.google.android.material.textfield.TextInputLayout style="@style/Widget.Material3.TextInputLayout.OutlinedBox" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="12dp" app:boxCornerRadiusTopStart="12dp" app:boxCornerRadiusTopEnd="12dp" app:boxCornerRadiusBottomStart="12dp" app:boxCornerRadiusBottomEnd="12dp" app:hintEnabled="false">
-                        <com.google.android.material.textfield.TextInputEditText android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="textEmailAddress"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/email_obrig" android:textColor="@color/verde_petroleo_profundo" android:textStyle="bold"/>
+                    <com.google.android.material.textfield.TextInputLayout android:id="@+id/tilEmail" style="@style/Widget.Material3.TextInputLayout.OutlinedBox" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="12dp" app:boxCornerRadiusTopStart="12dp" app:boxCornerRadiusTopEnd="12dp" app:boxCornerRadiusBottomStart="12dp" app:boxCornerRadiusBottomEnd="12dp" app:hintEnabled="false" app:errorEnabled="true">
+                        <com.google.android.material.textfield.TextInputEditText android:id="@+id/editEmail" android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="textEmailAddress"/>
                     </com.google.android.material.textfield.TextInputLayout>
 
-                    <com.google.android.material.textfield.TextInputLayout style="@style/Widget.Material3.TextInputLayout.OutlinedBox" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="12dp" app:boxCornerRadiusTopStart="12dp" app:boxCornerRadiusTopEnd="12dp" app:boxCornerRadiusBottomStart="12dp" app:boxCornerRadiusBottomEnd="12dp" app:hintEnabled="false">
-
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/whatsapp_obrig" android:textColor="@color/verde_petroleo_profundo" android:textStyle="bold"/>
+                    <com.google.android.material.textfield.TextInputLayout android:id="@+id/tilWhatsapp" style="@style/Widget.Material3.TextInputLayout.OutlinedBox" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="12dp" app:boxCornerRadiusTopStart="12dp" app:boxCornerRadiusTopEnd="12dp" app:boxCornerRadiusBottomStart="12dp" app:boxCornerRadiusBottomEnd="12dp" app:hintEnabled="false" app:errorEnabled="true">
+                        <com.google.android.material.textfield.TextInputEditText android:id="@+id/editWhatsapp" android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="phone"/>
                     </com.google.android.material.textfield.TextInputLayout>
 
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/whatsapp" android:textColor="@color/primary_teal" android:textStyle="bold"/>
-                    <com.google.android.material.textfield.TextInputLayout style="@style/Widget.Material3.TextInputLayout.OutlinedBox" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="12dp" app:boxCornerRadiusTopStart="12dp" app:boxCornerRadiusTopEnd="12dp" app:boxCornerRadiusBottomStart="12dp" app:boxCornerRadiusBottomEnd="12dp" app:hintEnabled="false">
-                        <com.google.android.material.textfield.TextInputEditText android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="phone"/>
-                    </com.google.android.material.textfield.TextInputLayout>
-
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/instagram" android:textColor="@color/primary_teal" android:textStyle="bold"/>
-                    <com.google.android.material.textfield.TextInputLayout style="@style/Widget.Material3.TextInputLayout.OutlinedBox" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="12dp" app:boxCornerRadiusTopStart="12dp" app:boxCornerRadiusTopEnd="12dp" app:boxCornerRadiusBottomStart="12dp" app:boxCornerRadiusBottomEnd="12dp" app:hintEnabled="false">
-                        <com.google.android.material.textfield.TextInputEditText android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="@string/seu_usuario" android:inputType="text"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/instagram" android:textColor="@color/verde_petroleo_profundo" android:textStyle="bold"/>
+                    <com.google.android.material.textfield.TextInputLayout android:id="@+id/tilInstagram" style="@style/Widget.Material3.TextInputLayout.OutlinedBox" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="12dp" app:boxCornerRadiusTopStart="12dp" app:boxCornerRadiusTopEnd="12dp" app:boxCornerRadiusBottomStart="12dp" app:boxCornerRadiusBottomEnd="12dp" app:hintEnabled="false">
+                        <com.google.android.material.textfield.TextInputEditText android:id="@+id/editInstagram" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="@string/seu_usuario" android:inputType="text"/>
                     </com.google.android.material.textfield.TextInputLayout>
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
@@ -174,46 +172,46 @@
                     android:orientation="vertical"
                     android:padding="16dp">
 
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/endereco" android:textColor="@color/primary_teal" android:textSize="18sp" android:textStyle="bold" android:layout_marginBottom="16dp"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/endereco" android:textColor="@color/verde_petroleo_profundo" android:textSize="18sp" android:textStyle="bold" android:layout_marginBottom="16dp"/>
 
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/cep" android:textColor="@color/primary_teal" android:textStyle="bold"/>
-                    <com.google.android.material.textfield.TextInputLayout style="@style/Widget.Material3.TextInputLayout.OutlinedBox" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="12dp" app:boxCornerRadiusTopStart="12dp" app:boxCornerRadiusTopEnd="12dp" app:boxCornerRadiusBottomStart="12dp" app:boxCornerRadiusBottomEnd="12dp" app:hintEnabled="false">
-                        <com.google.android.material.textfield.TextInputEditText android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="number"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/cep_obrig" android:textColor="@color/verde_petroleo_profundo" android:textStyle="bold"/>
+                    <com.google.android.material.textfield.TextInputLayout android:id="@+id/tilCEP" style="@style/Widget.Material3.TextInputLayout.OutlinedBox" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="12dp" app:boxCornerRadiusTopStart="12dp" app:boxCornerRadiusTopEnd="12dp" app:boxCornerRadiusBottomStart="12dp" app:boxCornerRadiusBottomEnd="12dp" app:hintEnabled="false" app:errorEnabled="true">
+                        <com.google.android.material.textfield.TextInputEditText android:id="@+id/editCEP" android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="number" android:maxLength="8"/>
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Logradouro"
-                        android:textColor="@color/primary_teal"
+                        android:text="@string/logradouro_obrig"
+                        android:textColor="@color/verde_petroleo_profundo"
                         android:textStyle="bold" />
-                    <com.google.android.material.textfield.TextInputLayout style="@style/Widget.Material3.TextInputLayout.OutlinedBox" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="12dp" app:boxCornerRadiusTopStart="12dp" app:boxCornerRadiusTopEnd="12dp" app:boxCornerRadiusBottomStart="12dp" app:boxCornerRadiusBottomEnd="12dp" app:hintEnabled="false">
-                        <com.google.android.material.textfield.TextInputEditText android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="textPostalAddress"/>
+                    <com.google.android.material.textfield.TextInputLayout android:id="@+id/tilLogradouro" style="@style/Widget.Material3.TextInputLayout.OutlinedBox" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="12dp" app:boxCornerRadiusTopStart="12dp" app:boxCornerRadiusTopEnd="12dp" app:boxCornerRadiusBottomStart="12dp" app:boxCornerRadiusBottomEnd="12dp" app:hintEnabled="false" app:errorEnabled="true">
+                        <com.google.android.material.textfield.TextInputEditText android:id="@+id/editLogradouro" android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="textPostalAddress"/>
                     </com.google.android.material.textfield.TextInputLayout>
 
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/numero" android:textColor="@color/primary_teal" android:textStyle="bold"/>
-                    <com.google.android.material.textfield.TextInputLayout style="@style/Widget.Material3.TextInputLayout.OutlinedBox" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="12dp" app:boxCornerRadiusTopStart="12dp" app:boxCornerRadiusTopEnd="12dp" app:boxCornerRadiusBottomStart="12dp" app:boxCornerRadiusBottomEnd="12dp" app:hintEnabled="false">
-                        <com.google.android.material.textfield.TextInputEditText android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="number"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/numero_obrig" android:textColor="@color/verde_petroleo_profundo" android:textStyle="bold"/>
+                    <com.google.android.material.textfield.TextInputLayout android:id="@+id/tilNumero" style="@style/Widget.Material3.TextInputLayout.OutlinedBox" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="12dp" app:boxCornerRadiusTopStart="12dp" app:boxCornerRadiusTopEnd="12dp" app:boxCornerRadiusBottomStart="12dp" app:boxCornerRadiusBottomEnd="12dp" app:hintEnabled="false" app:errorEnabled="true">
+                        <com.google.android.material.textfield.TextInputEditText android:id="@+id/editNumero" android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="number"/>
                     </com.google.android.material.textfield.TextInputLayout>
 
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/complemento" android:textColor="@color/primary_teal" android:textStyle="bold"/>
-                    <com.google.android.material.textfield.TextInputLayout style="@style/Widget.Material3.TextInputLayout.OutlinedBox" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="12dp" app:boxCornerRadiusTopStart="12dp" app:boxCornerRadiusTopEnd="12dp" app:boxCornerRadiusBottomStart="12dp" app:boxCornerRadiusBottomEnd="12dp" app:hintEnabled="false">
-                        <com.google.android.material.textfield.TextInputEditText android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="text"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/complemento" android:textColor="@color/verde_petroleo_profundo" android:textStyle="bold"/>
+                    <com.google.android.material.textfield.TextInputLayout android:id="@+id/tilComplemento" style="@style/Widget.Material3.TextInputLayout.OutlinedBox" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="12dp" app:boxCornerRadiusTopStart="12dp" app:boxCornerRadiusTopEnd="12dp" app:boxCornerRadiusBottomStart="12dp" app:boxCornerRadiusBottomEnd="12dp" app:hintEnabled="false">
+                        <com.google.android.material.textfield.TextInputEditText android:id="@+id/editComplemento" android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="text"/>
                     </com.google.android.material.textfield.TextInputLayout>
 
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/bairro" android:textColor="@color/primary_teal" android:textStyle="bold"/>
-                    <com.google.android.material.textfield.TextInputLayout style="@style/Widget.Material3.TextInputLayout.OutlinedBox" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="12dp" app:boxCornerRadiusTopStart="12dp" app:boxCornerRadiusTopEnd="12dp" app:boxCornerRadiusBottomStart="12dp" app:boxCornerRadiusBottomEnd="12dp" app:hintEnabled="false">
-                        <com.google.android.material.textfield.TextInputEditText android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="text"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/bairro_obrig" android:textColor="@color/verde_petroleo_profundo" android:textStyle="bold"/>
+                    <com.google.android.material.textfield.TextInputLayout android:id="@+id/tilBairro" style="@style/Widget.Material3.TextInputLayout.OutlinedBox" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="12dp" app:boxCornerRadiusTopStart="12dp" app:boxCornerRadiusTopEnd="12dp" app:boxCornerRadiusBottomStart="12dp" app:boxCornerRadiusBottomEnd="12dp" app:hintEnabled="false" app:errorEnabled="true">
+                        <com.google.android.material.textfield.TextInputEditText android:id="@+id/editBairro" android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="text"/>
                     </com.google.android.material.textfield.TextInputLayout>
 
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/cidade" android:textColor="@color/primary_teal" android:textStyle="bold"/>
-                    <com.google.android.material.textfield.TextInputLayout style="@style/Widget.Material3.TextInputLayout.OutlinedBox" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="12dp" app:boxCornerRadiusTopStart="12dp" app:boxCornerRadiusTopEnd="12dp" app:boxCornerRadiusBottomStart="12dp" app:boxCornerRadiusBottomEnd="12dp" app:hintEnabled="false">
-                        <com.google.android.material.textfield.TextInputEditText android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="text"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/cidade_obrig" android:textColor="@color/verde_petroleo_profundo" android:textStyle="bold"/>
+                    <com.google.android.material.textfield.TextInputLayout android:id="@+id/tilCidade" style="@style/Widget.Material3.TextInputLayout.OutlinedBox" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="12dp" app:boxCornerRadiusTopStart="12dp" app:boxCornerRadiusTopEnd="12dp" app:boxCornerRadiusBottomStart="12dp" app:boxCornerRadiusBottomEnd="12dp" app:hintEnabled="false" app:errorEnabled="true">
+                        <com.google.android.material.textfield.TextInputEditText android:id="@+id/editCidade" android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="text"/>
                     </com.google.android.material.textfield.TextInputLayout>
 
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/estado" android:textColor="@color/primary_teal" android:textStyle="bold"/>
-                    <com.google.android.material.textfield.TextInputLayout style="@style/Widget.Material3.TextInputLayout.OutlinedBox" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="12dp" app:boxCornerRadiusTopStart="12dp" app:boxCornerRadiusTopEnd="12dp" app:boxCornerRadiusBottomStart="12dp" app:boxCornerRadiusBottomEnd="12dp" app:hintEnabled="false">
-                        <com.google.android.material.textfield.TextInputEditText android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="text"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/estado_obrig" android:textColor="@color/verde_petroleo_profundo" android:textStyle="bold"/>
+                    <com.google.android.material.textfield.TextInputLayout android:id="@+id/tilEstado" style="@style/Widget.Material3.TextInputLayout.OutlinedBox" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="12dp" app:boxCornerRadiusTopStart="12dp" app:boxCornerRadiusTopEnd="12dp" app:boxCornerRadiusBottomStart="12dp" app:boxCornerRadiusBottomEnd="12dp" app:hintEnabled="false" app:errorEnabled="true">
+                        <com.google.android.material.textfield.TextInputEditText android:id="@+id/editEstado" android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="text"/>
                     </com.google.android.material.textfield.TextInputLayout>
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
@@ -231,11 +229,23 @@
                     android:orientation="vertical"
                     android:padding="16dp">
 
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/horario_funcionamento" android:textColor="@color/primary_teal" android:textSize="18sp" android:textStyle="bold" android:layout_marginBottom="16dp"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/horario_funcionamento" android:textColor="@color/verde_petroleo_profundo" android:textSize="18sp" android:textStyle="bold" android:layout_marginBottom="16dp"/>
 
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/abertura" android:textColor="@color/primary_teal" android:textStyle="bold"/>
-                    <com.google.android.material.textfield.TextInputLayout style="@style/Widget.Material3.TextInputLayout.OutlinedBox" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="12dp" app:boxCornerRadiusTopStart="12dp" app:boxCornerRadiusTopEnd="12dp" app:boxCornerRadiusBottomStart="12dp" app:boxCornerRadiusBottomEnd="12dp" app:hintEnabled="false">
-                        <com.google.android.material.textfield.TextInputEditText
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/dias_obrig" android:textColor="@color/verde_petroleo_profundo" android:textStyle="bold"/>
+                    <com.google.android.material.textfield.TextInputLayout android:id="@+id/tilDias" style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="12dp" app:boxCornerRadiusTopStart="12dp" app:boxCornerRadiusTopEnd="12dp" app:boxCornerRadiusBottomStart="12dp" app:boxCornerRadiusBottomEnd="12dp" app:hintEnabled="false" app:errorEnabled="true">
+                        <AutoCompleteTextView
+                            android:id="@+id/editDias"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:focusable="false"
+                            android:clickable="true"
+                            android:hint="@string/selecione_dias"
+                            android:inputType="none"/>
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/abertura_obrig" android:textColor="@color/verde_petroleo_profundo" android:textStyle="bold"/>
+                    <com.google.android.material.textfield.TextInputLayout android:id="@+id/tilAbertura" style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="12dp" app:boxCornerRadiusTopStart="12dp" app:boxCornerRadiusTopEnd="12dp" app:boxCornerRadiusBottomStart="12dp" app:boxCornerRadiusBottomEnd="12dp" app:hintEnabled="false" app:errorEnabled="true">
+                        <AutoCompleteTextView
                             android:id="@+id/editAbertura"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
@@ -244,9 +254,9 @@
                             android:inputType="none"/>
                     </com.google.android.material.textfield.TextInputLayout>
 
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/fechamento" android:textColor="@color/primary_teal" android:textStyle="bold"/>
-                    <com.google.android.material.textfield.TextInputLayout style="@style/Widget.Material3.TextInputLayout.OutlinedBox" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="12dp" app:boxCornerRadiusTopStart="12dp" app:boxCornerRadiusTopEnd="12dp" app:boxCornerRadiusBottomStart="12dp" app:boxCornerRadiusBottomEnd="12dp" app:hintEnabled="false">
-                        <com.google.android.material.textfield.TextInputEditText
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/fechamento_obrig" android:textColor="@color/verde_petroleo_profundo" android:textStyle="bold"/>
+                    <com.google.android.material.textfield.TextInputLayout android:id="@+id/tilFechamento" style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="12dp" app:boxCornerRadiusTopStart="12dp" app:boxCornerRadiusTopEnd="12dp" app:boxCornerRadiusBottomStart="12dp" app:boxCornerRadiusBottomEnd="12dp" app:hintEnabled="false" app:errorEnabled="true">
+                        <AutoCompleteTextView
                             android:id="@+id/editFechamento"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
@@ -270,16 +280,16 @@
                     android:orientation="vertical"
                     android:padding="16dp">
 
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/seguranca" android:textColor="@color/primary_teal" android:textSize="18sp" android:textStyle="bold" android:layout_marginBottom="16dp"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/seguranca" android:textColor="@color/verde_petroleo_profundo" android:textSize="18sp" android:textStyle="bold" android:layout_marginBottom="16dp"/>
 
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/senha" android:textColor="@color/primary_teal" android:textStyle="bold"/>
-                    <com.google.android.material.textfield.TextInputLayout style="@style/Widget.Material3.TextInputLayout.OutlinedBox" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="12dp" app:boxCornerRadiusTopStart="12dp" app:boxCornerRadiusTopEnd="12dp" app:boxCornerRadiusBottomStart="12dp" app:boxCornerRadiusBottomEnd="12dp" app:hintEnabled="false" app:passwordToggleEnabled="true">
-                        <com.google.android.material.textfield.TextInputEditText android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="textPassword"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/senha_obrig" android:textColor="@color/verde_petroleo_profundo" android:textStyle="bold"/>
+                    <com.google.android.material.textfield.TextInputLayout android:id="@+id/tilSenha" style="@style/Widget.Material3.TextInputLayout.OutlinedBox" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="12dp" app:boxCornerRadiusTopStart="12dp" app:boxCornerRadiusTopEnd="12dp" app:boxCornerRadiusBottomStart="12dp" app:boxCornerRadiusBottomEnd="12dp" app:hintEnabled="false" app:passwordToggleEnabled="true" app:errorEnabled="true">
+                        <com.google.android.material.textfield.TextInputEditText android:id="@+id/editSenha" android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="textPassword"/>
                     </com.google.android.material.textfield.TextInputLayout>
 
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/confirmar_senha" android:textColor="@color/primary_teal" android:textStyle="bold"/>
-                    <com.google.android.material.textfield.TextInputLayout style="@style/Widget.Material3.TextInputLayout.OutlinedBox" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="12dp" app:boxCornerRadiusTopStart="12dp" app:boxCornerRadiusTopEnd="12dp" app:boxCornerRadiusBottomStart="12dp" app:boxCornerRadiusBottomEnd="12dp" app:hintEnabled="false" app:passwordToggleEnabled="true">
-                        <com.google.android.material.textfield.TextInputEditText android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="textPassword"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/confirmar_senha_obrig" android:textColor="@color/verde_petroleo_profundo" android:textStyle="bold"/>
+                    <com.google.android.material.textfield.TextInputLayout android:id="@+id/tilConfirmarSenha" style="@style/Widget.Material3.TextInputLayout.OutlinedBox" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="12dp" app:boxCornerRadiusTopStart="12dp" app:boxCornerRadiusTopEnd="12dp" app:boxCornerRadiusBottomStart="12dp" app:boxCornerRadiusBottomEnd="12dp" app:hintEnabled="false" app:passwordToggleEnabled="true" app:errorEnabled="true">
+                        <com.google.android.material.textfield.TextInputEditText android:id="@+id/editConfirmarSenha" android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="textPassword"/>
                     </com.google.android.material.textfield.TextInputLayout>
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
@@ -290,7 +300,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
                 android:layout_marginBottom="16dp"
-                android:backgroundTint="@color/primary_orange"
+                android:backgroundTint="@color/terracota"
                 android:text="@string/cadastrar"
                 android:textAllCaps="false"
                 android:textColor="@color/white"

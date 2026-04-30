@@ -2,89 +2,109 @@ package com.app.pertodemim;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.TextUtils;
+import android.util.Patterns;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
 
 public class MainActivity extends AppCompatActivity {
 
-    private TextInputEditText textUsuario;
-    private TextInputEditText textSenha;
-    private Button btEntrar;
-    private TextView textRedefinirSenha;
-    private Button btCriarCliente;
-    private Button btCriarFornecedor;
+    // Componentes da interface
+    private TextInputEditText textUsuario, textSenha;
+    private TextInputLayout layoutUsuario, layoutSenha;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
+        EdgeToEdge.enable(this); // Ativa o modo tela cheia (desenha atrás das barras de sistema)
         setContentView(R.layout.activity_main);
 
-        // 1. Inicializar os componentes
+        // Inicialização dos campos e layouts
+        layoutUsuario = findViewById(R.id.layoutUsuario);
+        layoutSenha = findViewById(R.id.layoutSenha);
         textUsuario = findViewById(R.id.textUsuario);
         textSenha = findViewById(R.id.textSenha);
-        btEntrar = findViewById(R.id.btEntrar);
-        textRedefinirSenha = findViewById(R.id.textView2);
-        btCriarCliente = findViewById(R.id.btCriarCliente);
-        btCriarFornecedor = findViewById(R.id.btCriarFornecedor);
+        Button btEntrar = findViewById(R.id.btEntrar);
+        TextView textRedefinirSenha = findViewById(R.id.textView2);
+        Button btCriarCliente = findViewById(R.id.btCriarCliente);
+        Button btCriarFornecedor = findViewById(R.id.btCriarFornecedor);
 
-        // Clique para criar conta cliente
-        btCriarCliente.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, RegisterClientActivity.class);
-            startActivity(intent);
-        });
+        // Configura para limpar a borda vermelha/erro quando o usuário clica nos campos
+        setupClearErrorOnTouch();
 
-        // Clique para criar conta fornecedor
-        btCriarFornecedor.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, RegisterProviderActivity.class);
-            startActivity(intent);
-        });
+        // Navegação entre as telas de cadastro e redefinição
+        btCriarCliente.setOnClickListener(v -> startActivity(new Intent(this, RegisterClientActivity.class)));
+        btCriarFornecedor.setOnClickListener(v -> startActivity(new Intent(this, RegisterProviderActivity.class)));
+        textRedefinirSenha.setOnClickListener(v -> startActivity(new Intent(this, ResetPasswordActivity.class)));
 
-        // Clique para redefinir senha
-        textRedefinirSenha.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, ResetPasswordActivity.class);
-            startActivity(intent);
-        });
-
-        // 2. Configurar o clique do botão
+        // Lógica do botão de entrar
         btEntrar.setOnClickListener(v -> {
-            // 3. Pegar as informações digitadas
-            String usuario = textUsuario.getText().toString();
-            String senha = textSenha.getText().toString();
-
-            // Validar se os campos não estão vazios
-            if (usuario.isEmpty() || senha.isEmpty()) {
-                new AlertDialog.Builder(MainActivity.this)
-                        .setTitle("Atenção")
-                        .setMessage("Preencha todos os campos para continuar!")
-                        .setPositiveButton("Ok", null)
-                        .show();
-            } else {
-                // Abrir a nova tela (HomeActivity)
-                Intent intent = new Intent(MainActivity.this, HomeActivity.class);
+            if (validateFields()) {
+                // Se o e-mail e senha forem válidos, vai para a tela principal
+                Intent intent = new Intent(this, HomeActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(intent);
             }
         });
 
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+        // CORREÇÃO DO ENQUADRAMENTO E MARGENS:
+        // Capturamos os paddings originais (24dp das laterais) definidos no XML antes de aplicar as barras
+        View mainView = findViewById(R.id.main);
+        int pL = mainView.getPaddingLeft();
+        int pT = mainView.getPaddingTop();
+        int pR = mainView.getPaddingRight();
+        int pB = mainView.getPaddingBottom();
+
+        ViewCompat.setOnApplyWindowInsetsListener(mainView, (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left + v.getPaddingLeft(), 
-                         systemBars.top + v.getPaddingTop(), 
-                         systemBars.right + v.getPaddingRight(), 
-                         systemBars.bottom + v.getPaddingBottom());
+            // Somamos as barras de sistema às margens originais, mantendo o enquadramento correto
+            v.setPadding(systemBars.left + pL, systemBars.top + pT, systemBars.right + pR, systemBars.bottom + pB);
             return insets;
         });
+    }
+
+    // Metodo que remove o erro visual assim que o campo ganha foco ou é clicado
+    private void setupClearErrorOnTouch() {
+        textUsuario.setOnFocusChangeListener((v, hasFocus) -> { if (hasFocus) layoutUsuario.setError(null); });
+        textUsuario.setOnClickListener(v -> layoutUsuario.setError(null));
+        textSenha.setOnFocusChangeListener((v, hasFocus) -> { if (hasFocus) layoutSenha.setError(null); });
+        textSenha.setOnClickListener(v -> layoutSenha.setError(null));
+    }
+
+    // Validação estrita: o campo agora exige obrigatoriamente o formato de e-mail (com @ e domínio)
+    private boolean validateFields() {
+        boolean valid = true;
+        layoutUsuario.setError(null); // Reseta erros anteriores
+        layoutSenha.setError(null);
+
+        String inputUsuario = textUsuario.getText() != null ? textUsuario.getText().toString().trim() : "";
+        String inputSenha = textSenha.getText() != null ? textSenha.getText().toString() : "";
+
+        // Validação de E-mail: verifica se está vazio ou se não segue o padrão de e-mail (arroba, ponto, etc)
+        if (TextUtils.isEmpty(inputUsuario)) {
+            layoutUsuario.setError(getString(R.string.error_required));
+            valid = false;
+        } else if (!Patterns.EMAIL_ADDRESS.matcher(inputUsuario).matches()) {
+            layoutUsuario.setError(getString(R.string.error_invalid_email));
+            valid = false;
+        }
+
+        // Validação de Senha: apenas verifica se foi preenchida
+        if (TextUtils.isEmpty(inputSenha)) {
+            layoutSenha.setError(getString(R.string.error_required));
+            valid = false;
+        }
+
+        return valid;
     }
 }

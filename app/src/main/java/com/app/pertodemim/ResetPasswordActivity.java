@@ -1,24 +1,22 @@
 package com.app.pertodemim;
 
+import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
+import android.text.TextUtils;
+import android.util.Patterns;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
 
 public class ResetPasswordActivity extends AppCompatActivity {
 
-    private TextView tvVoltar;
+    private TextInputLayout layoutEmailReset;
     private TextInputEditText textEmailReset;
-    private MaterialButton btEnviarReset;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,38 +24,33 @@ public class ResetPasswordActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_reset_password);
 
-        tvVoltar = findViewById(R.id.tvVoltar);
+        TextView tvVoltar = findViewById(R.id.tvVoltar);
+        layoutEmailReset = findViewById(R.id.layoutEmailReset);
         textEmailReset = findViewById(R.id.textEmailReset);
-        btEnviarReset = findViewById(R.id.btEnviarReset);
+        MaterialButton btEnviarReset = findViewById(R.id.btEnviarReset);
 
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.mainReset), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left + v.getPaddingLeft(),
-                    systemBars.top + v.getPaddingTop(),
-                    systemBars.right + v.getPaddingRight(),
-                    systemBars.bottom + v.getPaddingBottom());
-            return insets;
-        });
+        textEmailReset.setOnFocusChangeListener((v, hasFocus) -> { if (hasFocus) layoutEmailReset.setError(null); });
+        textEmailReset.setOnClickListener(v -> layoutEmailReset.setError(null));
 
-        // Voltar para a tela anterior
-        tvVoltar.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                finish();
+        tvVoltar.setOnClickListener(v -> finish());
+
+        btEnviarReset.setOnClickListener(v -> {
+            if (validateFields()) {
+                startActivity(new Intent(this, VerifyCodeActivity.class));
             }
         });
+    }
 
-        // Lógica de envio
-        btEnviarReset.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String email = textEmailReset.getText().toString();
-                if (email.isEmpty()) {
-                    Toast.makeText(ResetPasswordActivity.this, "Digite seu e-mail!", Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(ResetPasswordActivity.this, "Instruções enviadas para: " + email, Toast.LENGTH_LONG).show();
-                }
-            }
-        });
+    private boolean validateFields() {
+        layoutEmailReset.setError(null);
+        String email = textEmailReset.getText() != null ? textEmailReset.getText().toString().trim() : "";
+        if (TextUtils.isEmpty(email)) {
+            layoutEmailReset.setError(getString(R.string.error_required));
+            return false;
+        } else if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            layoutEmailReset.setError(getString(R.string.error_invalid_email));
+            return false;
+        }
+        return true;
     }
 }
