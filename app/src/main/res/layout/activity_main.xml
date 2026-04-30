@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Layout da tela de Login (MainActivity) -->
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -14,6 +15,7 @@
         android:layout_height="wrap_content"
         android:padding="24dp">
 
+        <!-- Logo do aplicativo -->
         <ImageView
             android:id="@+id/logo"
             android:layout_width="150dp"
@@ -25,6 +27,7 @@
             app:layout_constraintTop_toTopOf="parent"
             app:srcCompat="@drawable/logo_perto_de_mim" />
 
+        <!-- Título do app -->
         <TextView
             android:id="@+id/title"
             android:layout_width="wrap_content"
@@ -38,6 +41,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/logo" />
 
+        <!-- Subtítulo de boas-vindas -->
         <TextView
             android:id="@+id/subtitle"
             android:layout_width="wrap_content"
@@ -50,6 +54,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/title" />
 
+        <!-- Rótulo do campo E-mail -->
         <TextView
             android:id="@+id/labelUsuario"
             android:layout_width="wrap_content"
@@ -61,6 +66,7 @@
             app:layout_constraintStart_toStartOf="@+id/layoutUsuario"
             app:layout_constraintTop_toBottomOf="@+id/subtitle" />
 
+        <!-- Campo para digitar o E-mail -->
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/layoutUsuario"
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
@@ -85,6 +91,7 @@
                 android:inputType="textEmailAddress" />
         </com.google.android.material.textfield.TextInputLayout>
 
+        <!-- Rótulo do campo Senha -->
         <TextView
             android:id="@+id/labelSenha"
             android:layout_width="wrap_content"
@@ -96,6 +103,7 @@
             app:layout_constraintStart_toStartOf="@+id/layoutSenha"
             app:layout_constraintTop_toBottomOf="@+id/layoutUsuario" />
 
+        <!-- Campo para digitar a Senha -->
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/layoutSenha"
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
@@ -122,6 +130,7 @@
                 android:inputType="textPassword" />
         </com.google.android.material.textfield.TextInputLayout>
 
+        <!-- Botão para Entrar -->
         <Button
             android:id="@+id/btEntrar"
             android:layout_width="0dp"
@@ -137,6 +146,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/layoutSenha" />
 
+        <!-- Texto para recuperar senha -->
         <TextView
             android:id="@+id/textView2"
             android:layout_width="wrap_content"
@@ -149,6 +159,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/btEntrar" />
 
+        <!-- Seção para criar novas contas -->
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -162,6 +173,7 @@
             app:layout_constraintTop_toBottomOf="@+id/textView2"
             app:layout_constraintVertical_bias="0.0">
 
+            <!-- Botão para cadastro de Cliente -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btCriarCliente"
                 style="@style/Widget.Material3.Button.OutlinedButton"
@@ -174,6 +186,7 @@
                 app:cornerRadius="12dp"
                 app:strokeColor="@color/terracota" />
 
+            <!-- Botão para cadastro de Fornecedor -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btCriarFornecedor"
                 style="@style/Widget.Material3.Button.OutlinedButton"

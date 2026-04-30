@@ -9,8 +9,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 
@@ -23,11 +25,15 @@ import com.google.android.material.textfield.TextInputLayout;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
+// Tela para cadastro de Fornecedores (empresas ou prestadores de serviço)
 public class RegisterProviderActivity extends AppCompatActivity {
 
-    // Componentes da interface
+    // Componentes de interface para dados da empresa, contato, endereço e horários
     private TextInputLayout tilNomeFantasia, tilRazaoSocial, tilCNPJ, tilCategoria,
             tilDescricao, tilEmail, tilWhatsapp, tilCEP,
             tilLogradouro, tilNumero, tilBairro, tilCidade, tilEstado,
@@ -40,32 +46,35 @@ public class RegisterProviderActivity extends AppCompatActivity {
 
     private AutoCompleteTextView editCategoria, editDias, editAbertura, editFechamento;
 
-    // Persistência da seleção de dias
+    // Variáveis para guardar os dias da semana e categorias selecionadas
     private boolean[] selectedDays;
     private final ArrayList<Integer> dayList = new ArrayList<>();
     private String[] daysArray;
-
-    // Persistência da seleção de categorias
-    private int lastCheckedCategoryId = -1;
+    private Set<String> selectedCategories = new HashSet<>();
     private String lastOtherCategoryText = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // Define o layout da tela de cadastro de fornecedor
         setContentView(R.layout.activity_register_provider);
 
         initViews(); // Inicializa os componentes
-        setupClearErrorOnTouch(); // Limpa erros ao interagir
+        setupClearErrorOnTouch(); // Limpa avisos de erro ao interagir
 
+        // Botão voltar
         ImageView btnBack = findViewById(R.id.btnBack);
         btnBack.setOnClickListener(v -> finish());
 
-        setupCategoriasDialog(); // Configura o seletor de categorias com memória
-        setupDayPicker(); // Configura o seletor de dias com memória
-        setupTimePickers(); // Configura os seletores de hora
+        // Configura seletores especiais (Categorias, Dias e Horários)
+        setupCategoriasDialog();
+        setupDayPicker();
+        setupTimePickers();
 
+        // Ação do botão "Cadastrar"
         Button btnRegister = findViewById(R.id.btnRegister);
         btnRegister.setOnClickListener(v -> {
+            // Se as validações passarem, finaliza e vai para a Home
             if (validateFields()) {
                 Intent intent = new Intent(this, HomeActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -74,6 +83,7 @@ public class RegisterProviderActivity extends AppCompatActivity {
         });
     }
 
+    // Liga as variáveis aos IDs definidos no layout XML
     private void initViews() {
         tilNomeFantasia = findViewById(R.id.tilNomeFantasia);
         tilRazaoSocial = findViewById(R.id.tilRazaoSocial);
@@ -114,6 +124,7 @@ public class RegisterProviderActivity extends AppCompatActivity {
         editAbertura = findViewById(R.id.editAbertura);
         editFechamento = findViewById(R.id.editFechamento);
 
+        // Prepara a lista de dias da semana para o seletor
         daysArray = new String[]{
                 getString(R.string.segunda), getString(R.string.terca), getString(R.string.quarta),
                 getString(R.string.quinta), getString(R.string.sexta), getString(R.string.sabado),
@@ -122,6 +133,7 @@ public class RegisterProviderActivity extends AppCompatActivity {
         selectedDays = new boolean[daysArray.length];
     }
 
+    // Remove erros visuais quando o usuário interage com os campos
     private void setupClearErrorOnTouch() {
         View[] fields = {editNomeFantasia, editRazaoSocial, editCNPJ, editCategoria, 
                 editDescricao, editEmail, editWhatsapp, editCEP, editLogradouro, editNumero, 
@@ -139,41 +151,69 @@ public class RegisterProviderActivity extends AppCompatActivity {
         }
     }
 
+    // Configura o diálogo para selecionar as categorias de serviço
     private void setupCategoriasDialog() {
         View.OnClickListener listener = v -> {
             tilCategoria.setError(null);
-            View view = LayoutInflater.from(this).inflate(R.layout.dialog_categorias, null);
-            RadioGroup rg = view.findViewById(R.id.rgCategorias);
-            EditText editOther = view.findViewById(R.id.editOutrosInput);
-
-            // Re-aplica a seleção anterior ao abrir o menu
-            if (lastCheckedCategoryId != -1) {
-                rg.check(lastCheckedCategoryId);
-                if (lastCheckedCategoryId == R.id.rbOutros) {
-                    editOther.setVisibility(View.VISIBLE);
-                    editOther.setText(lastOtherCategoryText);
-                }
+            View view = LayoutInflater.from(this).inflate(R.layout.dialog_filtros_multi, null);
+            LinearLayout container = view.findViewById(R.id.llOptionsContainer);
+            
+            String[] categorias = {
+                "Beleza e Estética", "Saúde", "Alimentação", "Educação", "Manutenção", "Tecnologia"
+            };
+            
+            List<CheckBox> checkBoxes = new ArrayList<>();
+            for (String cat : categorias) {
+                CheckBox cb = new CheckBox(this);
+                cb.setText(cat);
+                cb.setPadding(16, 16, 16, 16);
+                cb.setChecked(selectedCategories.contains(cat));
+                container.addView(cb);
+                checkBoxes.add(cb);
             }
 
-            rg.setOnCheckedChangeListener((group, checkedId) -> {
-                editOther.setVisibility(checkedId == R.id.rbOutros ? View.VISIBLE : View.GONE);
+            // Opção "Outros" que permite digitar uma nova categoria
+            CheckBox cbOutros = new CheckBox(this);
+            cbOutros.setText("Outros");
+            cbOutros.setPadding(16, 16, 16, 16);
+            cbOutros.setChecked(selectedCategories.contains("Outros"));
+            container.addView(cbOutros);
+            
+            EditText editOther = new EditText(this);
+            editOther.setHint(R.string.adicionar_categoria);
+            editOther.setText(lastOtherCategoryText);
+            editOther.setTextSize(16);
+            editOther.setVisibility(cbOutros.isChecked() ? View.VISIBLE : View.GONE);
+            container.addView(editOther);
+            
+            cbOutros.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                editOther.setVisibility(isChecked ? View.VISIBLE : View.GONE);
             });
 
             new AlertDialog.Builder(this)
                 .setTitle(R.string.selecione_categoria)
                 .setView(view)
                 .setPositiveButton("OK", (dialog, which) -> {
-                    int selectedId = rg.getCheckedRadioButtonId();
-                    if (selectedId != -1) {
-                        lastCheckedCategoryId = selectedId; // Salva para a próxima vez
-                        if (selectedId == R.id.rbOutros) {
-                            lastOtherCategoryText = editOther.getText().toString();
-                            editCategoria.setText(lastOtherCategoryText);
-                        } else {
-                            RadioButton rb = view.findViewById(selectedId);
-                            editCategoria.setText(rb.getText().toString());
+                    selectedCategories.clear();
+                    StringBuilder sb = new StringBuilder();
+                    
+                    for (CheckBox cb : checkBoxes) {
+                        if (cb.isChecked()) {
+                            selectedCategories.add(cb.getText().toString());
+                            if (sb.length() > 0) sb.append(", ");
+                            sb.append(cb.getText().toString());
                         }
                     }
+                    
+                    if (cbOutros.isChecked()) {
+                        selectedCategories.add("Outros");
+                        lastOtherCategoryText = editOther.getText().toString();
+                        if (!lastOtherCategoryText.isEmpty()) {
+                            if (sb.length() > 0) sb.append(", ");
+                            sb.append(lastOtherCategoryText);
+                        }
+                    }
+                    editCategoria.setText(sb.toString());
                 })
                 .setNegativeButton("Cancelar", null).show();
         };
@@ -181,6 +221,7 @@ public class RegisterProviderActivity extends AppCompatActivity {
         tilCategoria.setEndIconOnClickListener(listener);
     }
 
+    // Configura o diálogo para selecionar os dias de funcionamento
     private void setupDayPicker() {
         View.OnClickListener listener = v -> {
             tilDias.setError(null);
@@ -188,7 +229,6 @@ public class RegisterProviderActivity extends AppCompatActivity {
                 .setTitle(R.string.selecione_dias)
                 .setCancelable(false)
                 .setMultiChoiceItems(daysArray, selectedDays, (dialog, which, isChecked) -> {
-                    // O array 'selectedDays' já mantém o estado da seleção automaticamente
                     if (isChecked) {
                         if (!dayList.contains(which)) { dayList.add(which); Collections.sort(dayList); }
                     } else {
@@ -212,6 +252,7 @@ public class RegisterProviderActivity extends AppCompatActivity {
         tilDias.setEndIconOnClickListener(listener);
     }
 
+    // Configura os seletores de horário (Relógio)
     private void setupTimePickers() {
         View.OnClickListener aperturaListener = v -> showTimePicker(editAbertura);
         editAbertura.setOnClickListener(aperturaListener);
@@ -222,6 +263,7 @@ public class RegisterProviderActivity extends AppCompatActivity {
         tilFechamento.setEndIconOnClickListener(fechamentoListener);
     }
 
+    // Mostra o relógio para escolher hora e minuto
     private void showTimePicker(AutoCompleteTextView et) {
         new TimePickerDialog(this, (view, h, m) -> {
             et.setText(String.format(Locale.getDefault(), "%02d:%02d", h, m));
@@ -229,10 +271,12 @@ public class RegisterProviderActivity extends AppCompatActivity {
         }, 12, 0, true).show();
     }
 
+    // Valida se todos os campos obrigatórios foram preenchidos corretamente
     private boolean validateFields() {
         boolean valid = true;
         resetErrors();
 
+        // Valida campos de texto simples
         if (isEmpty(editNomeFantasia)) { tilNomeFantasia.setError(getString(R.string.error_required)); valid = false; }
         if (isEmpty(editRazaoSocial)) { tilRazaoSocial.setError(getString(R.string.error_required)); valid = false; }
         if (isEmpty(editDescricao)) { tilDescricao.setError(getString(R.string.error_required)); valid = false; }
@@ -247,6 +291,7 @@ public class RegisterProviderActivity extends AppCompatActivity {
         if (isEmpty(editAbertura)) { tilAbertura.setError(getString(R.string.error_required)); valid = false; }
         if (isEmpty(editFechamento)) { tilFechamento.setError(getString(R.string.error_required)); valid = false; }
 
+        // Valida se a hora de abertura é antes da hora de fechamento
         if (!isEmpty(editAbertura) && !isEmpty(editFechamento)) {
             if (editAbertura.getText().toString().compareTo(editFechamento.getText().toString()) >= 0) {
                 tilAbertura.setError(getString(R.string.error_opening_time));
@@ -255,6 +300,7 @@ public class RegisterProviderActivity extends AppCompatActivity {
             }
         }
 
+        // Validação de e-mail, CNPJ (14 dígitos) e CEP (8 dígitos)
         String email = editEmail.getText().toString().trim();
         if (TextUtils.isEmpty(email)) { tilEmail.setError(getString(R.string.error_required)); valid = false;
         } else if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) { tilEmail.setError(getString(R.string.error_invalid_email)); valid = false; }
@@ -262,6 +308,7 @@ public class RegisterProviderActivity extends AppCompatActivity {
         if (editCNPJ.getText().length() != 14) { tilCNPJ.setError(getString(R.string.error_invalid_cnpj)); valid = false; }
         if (editCEP.getText().length() != 8) { tilCEP.setError(getString(R.string.error_invalid_cep)); valid = false; }
 
+        // Validação de senha
         String s = editSenha.getText().toString(), c = editConfirmarSenha.getText().toString();
         if (s.isEmpty()) { tilSenha.setError(getString(R.string.error_required)); valid = false; }
         if (c.isEmpty()) { tilConfirmarSenha.setError(getString(R.string.error_required)); valid = false; }
@@ -270,6 +317,7 @@ public class RegisterProviderActivity extends AppCompatActivity {
         return valid;
     }
 
+    // Limpa todas as mensagens de erro visuais
     private void resetErrors() {
         TextInputLayout[] layouts = {tilNomeFantasia, tilRazaoSocial, tilCNPJ, tilCategoria, 
                 tilDescricao, tilEmail, tilWhatsapp, tilCEP, tilLogradouro, tilNumero, tilBairro, 
@@ -277,6 +325,7 @@ public class RegisterProviderActivity extends AppCompatActivity {
         for (TextInputLayout l : layouts) l.setError(null);
     }
 
+    // Verifica se um campo está vazio
     private boolean isEmpty(View v) {
         if (v instanceof EditText) return TextUtils.isEmpty(((EditText) v).getText());
         return true;

@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Layout da tela de Cadastro de Cliente (RegisterClientActivity) -->
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -7,7 +8,7 @@
     android:background="@color/off_white"
     tools:context=".RegisterClientActivity">
 
-    <!-- Header Fixo no Topo -->
+    <!-- Cabeçalho verde com botão de voltar e título -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/header"
         android:layout_width="match_parent"
@@ -52,7 +53,7 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <!-- Área de Rolagem -->
+    <!-- Área com rolagem para caber todos os campos do formulário -->
     <ScrollView
         android:id="@+id/scrollView"
         android:layout_width="match_parent"
@@ -67,7 +68,7 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <!-- BLOCO 1: Dados Pessoais -->
+            <!-- Bloco 1: Informações Pessoais (Nome, E-mail, CPF, etc.) -->
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -111,7 +112,7 @@
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
-            <!-- BLOCO 2: Endereço -->
+            <!-- Bloco 2: Endereço (CEP, Rua, Número, etc.) -->
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -170,7 +171,7 @@
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
-            <!-- BLOCO 3: Segurança -->
+            <!-- Bloco 3: Segurança (Criação de Senha) -->
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -199,7 +200,7 @@
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
-            <!-- Botão no final do scroll -->
+            <!-- Botão final para realizar o cadastro -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnRegister"
                 android:layout_width="match_parent"

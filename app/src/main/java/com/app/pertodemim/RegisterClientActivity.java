@@ -12,9 +12,10 @@ import com.google.android.material.textfield.TextInputLayout;
 
 import java.util.Objects;
 
+// Tela para cadastro de novos Clientes (usuários comuns)
 public class RegisterClientActivity extends AppCompatActivity {
 
-    // Containers de erro e campos de texto
+    // Containers para exibir mensagens de erro e campos de texto
     private TextInputLayout tilNome, tilEmail, tilTelefone, tilCPF, tilNascimento,
             tilCEP, tilLogradouro, tilNumero, tilBairro, tilCidade, tilEstado,
             tilSenha, tilConfirmarSenha;
@@ -25,18 +26,20 @@ public class RegisterClientActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // Define o layout da tela de cadastro de cliente
         setContentView(R.layout.activity_register_client);
 
-        initViews(); // Inicializa componentes
-        setupClearErrorOnTouch(); // Limpa erros ao interagir
+        initViews(); // Inicializa todos os componentes da interface
+        setupClearErrorOnTouch(); // Configura para remover erros ao clicar nos campos
 
-        // Botão voltar
+        // Botão para voltar à tela anterior
         ImageView btnBack = findViewById(R.id.btnBack);
         btnBack.setOnClickListener(v -> finish());
 
-        // Ação de cadastro
+        // Ação do botão de cadastrar
         MaterialButton btnRegister = findViewById(R.id.btnRegister);
         btnRegister.setOnClickListener(v -> {
+            // Se todos os campos estiverem válidos, finaliza o cadastro e vai para a Home
             if (validateFields()) {
                 Intent intent = new Intent(this, HomeActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -45,6 +48,7 @@ public class RegisterClientActivity extends AppCompatActivity {
         });
     }
 
+    // Liga as variáveis do código aos componentes do arquivo XML (layout)
     private void initViews() {
         tilNome = findViewById(R.id.tilNome);
         tilEmail = findViewById(R.id.tilEmail);
@@ -75,6 +79,7 @@ public class RegisterClientActivity extends AppCompatActivity {
         editConfirmarSenha = findViewById(R.id.editConfirmarSenha);
     }
 
+    // Função que limpa os avisos de erro quando o usuário começa a digitar no campo
     private void setupClearErrorOnTouch() {
         TextInputEditText[] fields = {editNome, editEmail, editTelefone, editCPF, editNascimento, editCEP, 
                 editLogradouro, editNumero, editBairro, editCidade, editEstado, editSenha, editConfirmarSenha};
@@ -88,10 +93,12 @@ public class RegisterClientActivity extends AppCompatActivity {
         }
     }
 
+    // Valida todos os campos (nome, e-mail, telefone, CPF, endereço, senhas)
     private boolean validateFields() {
         boolean valid = true;
-        resetErrors();
+        resetErrors(); // Começa limpando erros antigos
 
+        // Valida campos obrigatórios simples
         if (isEmpty(editNome)) { tilNome.setError(getString(R.string.error_required)); valid = false; }
         if (isEmpty(editTelefone)) { tilTelefone.setError(getString(R.string.error_required)); valid = false; }
         if (isEmpty(editNascimento)) { tilNascimento.setError(getString(R.string.error_required)); valid = false; }
@@ -101,6 +108,7 @@ public class RegisterClientActivity extends AppCompatActivity {
         if (isEmpty(editCidade)) { tilCidade.setError(getString(R.string.error_required)); valid = false; }
         if (isEmpty(editEstado)) { tilEstado.setError(getString(R.string.error_required)); valid = false; }
 
+        // Validação de E-mail
         String email = editEmail.getText() != null ? editEmail.getText().toString().trim() : "";
         if (TextUtils.isEmpty(email)) {
             tilEmail.setError(getString(R.string.error_required));
@@ -110,6 +118,7 @@ public class RegisterClientActivity extends AppCompatActivity {
             valid = false;
         }
 
+        // Validação de CPF (exige 11 dígitos)
         String cpf = editCPF.getText() != null ? editCPF.getText().toString().trim() : "";
         if (TextUtils.isEmpty(cpf)) {
             tilCPF.setError(getString(R.string.error_required));
@@ -119,6 +128,7 @@ public class RegisterClientActivity extends AppCompatActivity {
             valid = false;
         }
 
+        // Validação de CEP (exige 8 dígitos)
         String cep = editCEP.getText() != null ? editCEP.getText().toString().trim() : "";
         if (TextUtils.isEmpty(cep)) {
             tilCEP.setError(getString(R.string.error_required));
@@ -128,6 +138,7 @@ public class RegisterClientActivity extends AppCompatActivity {
             valid = false;
         }
 
+        // Validação de Senha e Confirmação
         String senha = editSenha.getText() != null ? editSenha.getText().toString() : "";
         String confirmacao = editConfirmarSenha.getText() != null ? editConfirmarSenha.getText().toString() : "";
 
@@ -139,6 +150,7 @@ public class RegisterClientActivity extends AppCompatActivity {
             tilConfirmarSenha.setError(getString(R.string.error_required));
             valid = false;
         } else if (!Objects.equals(senha, confirmacao)) {
+            // Se as senhas não forem iguais, avisa o usuário
             tilSenha.setError(getString(R.string.error_password_mismatch));
             tilConfirmarSenha.setError(getString(R.string.error_password_mismatch));
             valid = false;
@@ -147,6 +159,7 @@ public class RegisterClientActivity extends AppCompatActivity {
         return valid;
     }
 
+    // Limpa todas as mensagens de erro visuais da tela
     private void resetErrors() {
         tilNome.setError(null); tilEmail.setError(null); tilTelefone.setError(null);
         tilCPF.setError(null); tilNascimento.setError(null); tilCEP.setError(null);
@@ -155,6 +168,7 @@ public class RegisterClientActivity extends AppCompatActivity {
         tilConfirmarSenha.setError(null);
     }
 
+    // Função auxiliar que verifica se um campo de texto está vazio
     private boolean isEmpty(TextInputEditText et) {
         return et.getText() == null || TextUtils.isEmpty(et.getText().toString().trim());
     }

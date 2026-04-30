@@ -1,17 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Menu de navegação inferior que aparece na parte de baixo do app -->
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Opção que leva para o Mapa -->
     <item
         android:id="@+id/nav_mapa"
         android:icon="@drawable/ic_map"
         android:title="@string/mapa" />
+    <!-- Opção que leva para a Vitrine (lista de produtos/serviços) -->
     <item
         android:id="@+id/nav_vitrine"
         android:icon="@drawable/ic_vitrine"
         android:title="@string/vitrine" />
+    <!-- Opção que leva para as Conversas (Chat) -->
     <item
         android:id="@+id/nav_chat"
         android:icon="@drawable/ic_chat"
         android:title="@string/chat" />
+    <!-- Opção que leva para o Perfil do usuário -->
     <item
         android:id="@+id/nav_perfil"
         android:icon="@drawable/ic_profile"
