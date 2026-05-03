@@ -1,4 +1,5 @@
 import pool from '../config/db.js';
+import bcrypt from 'bcrypt';
 
 // =========================================
 // VALIDACOES
@@ -88,19 +89,8 @@ function validarCEP(cep) {
 export const criarUsuario = async (req, res) => {
   try {
     const {
-      nome,
-      email,
-      senha,
-      tipo,
-      telefone,
-      cpf_cnpj,
-      logradouro,
-      cep,
-      numero,
-      bairro,
-      complemento,
-      cidade,
-      estado,
+      nome, email, senha, tipo, telefone, cpf_cnpj,
+      logradouro, cep, numero, bairro, complemento, cidade, estado,
     } = req.body;
 
     const erros = [];
@@ -169,6 +159,10 @@ export const criarUsuario = async (req, res) => {
       return res.status(400).json({ erros });
     }
 
+    // Gera o hash da senha antes de salvar
+    // O numero 10 e o "custo" do hash — quanto maior, mais seguro e mais lento
+    const senhaHash = await bcrypt.hash(senha, 10);
+
     const result = await pool.query(
       `INSERT INTO usuarios
         (nome, email, senha, telefone, cpf_cnpj, tipo,
@@ -180,7 +174,7 @@ export const criarUsuario = async (req, res) => {
       [
         nome.trim(),
         email.toLowerCase().trim(),
-        senha,
+        senhaHash,                       // salva o hash, nao a senha original
         telefone.replace(/\D/g, ''),
         cpf_cnpj.replace(/\D/g, ''),
         tipo,
@@ -217,8 +211,7 @@ export const listarUsuarios = async (req, res) => {
       `SELECT id, nome, email, telefone, cpf_cnpj, tipo,
               logradouro, cep, numero, bairro, complemento, cidade, estado,
               created_at
-       FROM usuarios
-       ORDER BY id`
+       FROM usuarios ORDER BY id`
     );
     return res.json(result.rows);
   } catch (error) {
