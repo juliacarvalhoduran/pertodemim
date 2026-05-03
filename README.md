@@ -58,18 +58,20 @@ O servidor sobe em `http://localhost:3000`
 backend-app/
 ├── src/
 │   ├── config/
-│   │   └── db.js               # Conexao com o banco
+│   │   └── db.js
 │   ├── controllers/
 │   │   ├── usuariosController.js
+│   │   ├── fornecedoresController.js
 │   │   └── authController.js
 │   ├── middlewares/
-│   │   └── authMiddleware.js    # Protege rotas com JWT
+│   │   └── authMiddleware.js
 │   ├── routes/
 │   │   ├── usuarios.js
+│   │   ├── fornecedores.js
 │   │   └── auth.js
 │   └── app.js
-├── .env                         # NAO sobe no Git, aqui fica suas senhas. 
-├── .env.example                 # Modelo sem valores reais
+├── .env                  # NAO sobe no Git, aqui ficam suas senhas
+├── .env.example          # Modelo sem valores reais
 ├── .gitignore
 └── package.json
 ```
@@ -90,9 +92,9 @@ O token e obtido no login e expira em 7 dias.
 
 ## Rotas
 
-### Usuarios
+### 1. Usuarios
 
-#### POST `/usuarios` — Criar usuario
+#### POST `/usuarios` — Criar cliente
 
 **Body:**
 ```json
@@ -133,6 +135,7 @@ O token e obtido no login e expira em 7 dias.
 | complemento | Opcional |
 
 > Enviar telefone, cpf_cnpj e cep **sem mascara** — so os digitos.
+> Data de nascimento no formato `YYYY-MM-DD`.
 
 **Respostas:**
 
@@ -163,11 +166,11 @@ O token e obtido no login e expira em 7 dias.
 `400` — erro de validacao:
 ```json
 {
-  "erros": ["Fornecedor deve ter no minimo 18 anos."]
+  "erros": ["Cliente deve ter no minimo 16 anos."]
 }
 ```
 
-`409` — email ou cpf_cnpj duplicado:
+`409` — duplicidade:
 ```json
 {
   "erro": "E-mail ja cadastrado."
@@ -186,16 +189,152 @@ Sem body. Retorna array com todos os usuarios.
 
 Sem body. Substituir `:id` pelo numero do usuario.
 
-`404` se nao encontrado:
+`404` se nao encontrado.
+
+---
+
+### 2. Fornecedores
+
+#### POST `/fornecedores` — Cadastrar fornecedor
+
+Salva os dados pessoais em `usuarios` e os dados da loja em `fornecedores` numa unica requisicao, usando transacao — se qualquer parte falhar, nada e salvo.
+
+**Body:**
 ```json
 {
-  "erro": "Usuario nao encontrado."
+  "nome": "Marina Silva",
+  "email": "marina@email.com",
+  "senha": "123456",
+  "telefone": "85988887777",
+  "cpf_cnpj": "11144477735",
+  "data_nascimento": "1995-03-20",
+  "logradouro": "Av. Beira Mar",
+  "cep": "60165121",
+  "numero": "100",
+  "bairro": "Meireles",
+  "cidade": "Fortaleza",
+  "estado": "CE",
+  "nome_loja": "Studio Marina",
+  "nome_responsavel": "Marina Silva",
+  "categoria": "Beleza e Estetica",
+  "descricao": "Especialista em cabelo e maquiagem",
+  "preco_medio": 80
+}
+```
+
+> Quando `categoria` for `"Outros"`, adicionar o campo `categoria_outro`:
+```json
+{
+  "categoria": "Outros",
+  "categoria_outro": "Tatuagem"
+}
+```
+
+**Categorias validas:**
+- `Beleza e Estetica`
+- `Saude`
+- `Alimentacao`
+- `Manutencao`
+- `Tecnologia`
+- `Outros` (requer `categoria_outro`)
+
+**Regras de validacao — dados pessoais:**
+| Campo | Regra |
+|---|---|
+| nome | Obrigatorio, max 40 caracteres |
+| email | Obrigatorio, formato valido. Nao pode ser duplicado |
+| senha | Obrigatorio, minimo 6 caracteres |
+| telefone | Obrigatorio, DDD valido + numero (so digitos) |
+| cpf_cnpj | Obrigatorio, CPF ou CNPJ valido. Nao pode ser duplicado |
+| data_nascimento | Obrigatorio, formato `YYYY-MM-DD`. Minimo 18 anos |
+| logradouro | Obrigatorio, max 50 caracteres |
+| cep | Obrigatorio, 8 digitos |
+| numero | Obrigatorio |
+| bairro | Obrigatorio |
+| cidade | Obrigatorio |
+| estado | Obrigatorio, sigla ex: `"CE"` |
+| complemento | Opcional |
+
+**Regras de validacao — dados da loja:**
+| Campo | Regra |
+|---|---|
+| nome_loja | Obrigatorio |
+| nome_responsavel | Obrigatorio |
+| categoria | Obrigatorio, deve ser uma das categorias validas |
+| categoria_outro | Obrigatorio apenas quando categoria for `"Outros"` |
+| descricao | Obrigatorio |
+| preco_medio | Obrigatorio, numero positivo |
+
+**Respostas:**
+
+`201` — fornecedor cadastrado:
+```json
+{
+  "mensagem": "Fornecedor cadastrado com sucesso!",
+  "usuario": {
+    "id": 10,
+    "nome": "Marina Silva",
+    "email": "marina@email.com",
+    "telefone": "85988887777",
+    "cpf_cnpj": "11144477735",
+    "tipo": "fornecedor",
+    "logradouro": "Av. Beira Mar",
+    "cep": "60165121",
+    "numero": "100",
+    "bairro": "Meireles",
+    "complemento": null,
+    "cidade": "Fortaleza",
+    "estado": "CE",
+    "data_nascimento": "1995-03-20",
+    "created_at": "2026-05-03T21:44:14.659Z"
+  },
+  "loja": {
+    "id": 4,
+    "usuario_id": 10,
+    "nome_loja": "Studio Marina",
+    "nome_responsavel": "Marina Silva",
+    "categoria": "Beleza e Estetica",
+    "categoria_outro": null,
+    "descricao": "Especialista em cabelo e maquiagem",
+    "preco_medio": "80"
+  }
+}
+```
+
+`400` — erro de validacao:
+```json
+{
+  "erros": [
+    "Fornecedor deve ter no minimo 18 anos.",
+    "Ao selecionar \"Outros\", descreva a categoria."
+  ]
+}
+```
+
+`409` — duplicidade:
+```json
+{
+  "erro": "E-mail ja cadastrado."
 }
 ```
 
 ---
 
-### Autenticacao
+#### GET `/fornecedores` — Listar todos os fornecedores
+
+Sem body. Retorna array com dados pessoais e da loja unidos.
+
+---
+
+#### GET `/fornecedores/:id` — Buscar fornecedor por ID
+
+Sem body. Substituir `:id` pelo ID do usuario.
+
+`404` se nao encontrado.
+
+---
+
+### 3. Autenticacao
 
 #### POST `/auth/login` — Login
 
@@ -237,20 +376,27 @@ Sem body. Substituir `:id` pelo numero do usuario.
 3. **Tipo:** usar o campo `tipo` retornado no login para redirecionar — cliente vai para tela de cliente, fornecedor para dashboard.
 4. **Token expirado:** se a API retornar `401` em rota protegida, redirecionar para o login.
 5. **Erros:** a API retorna todos os erros de uma vez no array `erros`.
-6. **Idade minima:** cliente 16 anos, fornecedor 18 anos — validar no front tambem para melhor experiencia.
+6. **Idade minima:** cliente 16 anos, fornecedor 18 anos.
+7. **Categoria Outros:** quando o usuario selecionar "Outros", exibir campo de texto e enviar `categoria_outro` no body.
 
 ---
 
 ## Exemplo em JavaScript
 
 ```javascript
-// Cadastro
+// Cadastro de cliente
 const response = await fetch('http://localhost:3000/usuarios', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({ ...dadosDoFormulario }),
 });
-const data = await response.json();
+
+// Cadastro de fornecedor
+const responseForn = await fetch('http://localhost:3000/fornecedores', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ ...dadosPessoais, ...dadosDaLoja }),
+});
 
 // Login
 const responseLogin = await fetch('http://localhost:3000/auth/login', {
@@ -267,4 +413,3 @@ const responseProt = await fetch('http://localhost:3000/rota-protegida', {
     'Authorization': `Bearer ${token}`,
   },
 });
-```
