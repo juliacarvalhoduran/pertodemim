@@ -2,8 +2,6 @@ package com.app.pertodemim;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -33,30 +31,31 @@ import java.util.Locale;
 // Tela principal do aplicativo que exibe o mapa e filtros de busca
 public class HomeActivity extends AppCompatActivity implements OnMapReadyCallback {
 
-    // Componentes de filtro (Sliders de preço e distância)
+    // Componentes de interface: seletores deslizantes (Sliders) e campos de texto
     private RangeSlider sliderPreco, sliderDistancia;
     private EditText editMinPreco, editMaxPreco, editMinDistancia, editMaxDistancia;
     private TextView tvSelectedAvaliacao, tvSelectedCategoria;
     private View panelPreco, panelDistancia;
-    private boolean isUpdating = false;
+    private boolean isUpdating = false; // Flag para evitar loops infinitos de atualização
 
-    // Listas para armazenar os filtros selecionados
-    private List<String> selectedAvaliacoes = new ArrayList<>();
-    private List<String> selectedCategorias = new ArrayList<>();
+    // Listas para armazenar as opções de filtro marcadas pelo usuário
+    private final List<String> selectedAvaliacoes = new ArrayList<>();
+    private final List<String> selectedCategorias = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // Define o layout da tela principal
         setContentView(R.layout.activity_home);
 
-        // Inicializa o mapa do Google
+        // Inicializa o mapa do Google (usando um Fragment)
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         if (mapFragment != null) {
             mapFragment.getMapAsync(this);
         }
 
-        // Lógica para abrir e fechar o menu lateral de filtros
+        // Lógica do menu lateral de filtros (abrir e fechar)
         View btnMenu = findViewById(R.id.btnMenu);
         View filtersContainer = findViewById(R.id.filtersContainer);
         View btnCloseFilters = findViewById(R.id.btnCloseFilters);
@@ -64,73 +63,83 @@ public class HomeActivity extends AppCompatActivity implements OnMapReadyCallbac
         btnMenu.setOnClickListener(v -> filtersContainer.setVisibility(View.VISIBLE));
         btnCloseFilters.setOnClickListener(v -> {
             filtersContainer.setVisibility(View.GONE);
-            hideAllPanels();
+            hideAllPanels(); // Fecha também os sub-painéis de preço/distância
         });
 
-        // Painéis de filtro (Preço e Distância)
+        // Sub-painéis de ajuste fino (Preço e Distância)
         panelPreco = findViewById(R.id.panelPreco);
         panelDistancia = findViewById(R.id.panelDistancia);
 
-        // Alterna a exibição dos painéis ao clicar nos botões de filtro
+        // Alterna a exibição dos painéis quando os botões de filtro são clicados
         findViewById(R.id.btnFiltroPreco).setOnClickListener(v -> togglePanel(panelPreco));
         findViewById(R.id.btnFiltroDistancia).setOnClickListener(v -> togglePanel(panelDistancia));
 
         tvSelectedAvaliacao = findViewById(R.id.tvSelectedAvaliacao);
         tvSelectedCategoria = findViewById(R.id.tvSelectedCategoria);
 
-        // Abre diálogo para selecionar múltiplas avaliações
+        // Abre a janelinha para escolher as estrelas da avaliação
         findViewById(R.id.btnFiltroAvaliacao).setOnClickListener(v -> showMultiSelectDialog("Avaliação", 
                 new String[]{"1 estrela", "2 estrelas", "3 estrelas", "4 estrelas", "5 estrelas"}, 
                 selectedAvaliacoes, tvSelectedAvaliacao));
         
-        // Abre diálogo para selecionar múltiplas categorias
-        findViewById(R.id.btnFiltroCategoria).setOnClickListener(v -> showMultiSelectDialog("Categoria", 
-                new String[]{"Beleza e Estética", "Saúde", "Alimentação", "Educação", "Manutenção", "Tecnologia", "Outros"}, 
+        // Abre a janelinha para escolher as categorias de serviço
+        findViewById(R.id.btnFiltroCategoria).setOnClickListener(v -> showMultiSelectDialog(getString(R.string.categoria), 
+                new String[]{getString(R.string.beleza_estetica), getString(R.string.saude), 
+                        getString(R.string.alimentacao), getString(R.string.educacao), 
+                        getString(R.string.manutencao), getString(R.string.tecnologia), "Outros"}, 
                 selectedCategorias, tvSelectedCategoria));
 
-        // Configura os sliders e campos de texto para preço e distância
+        // Configura a lógica de funcionamento dos filtros de preço e distância
         setupPriceFilter();
         setupDistanceFilter();
+        setupHomeSearch();
 
-        // Configuração da barra de navegação inferior
+        // Configuração do menu de navegação inferior (Bottom Navigation)
         BottomNavigationView bottomNavigation = findViewById(R.id.bottomNavigation);
-        bottomNavigation.setSelectedItemId(R.id.nav_mapa);
+        bottomNavigation.setSelectedItemId(R.id.nav_mapa); // Marca o Mapa como selecionado
 
         bottomNavigation.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
             if (id == R.id.nav_perfil) {
+                // Vai para a tela de Perfil
                 startActivity(new Intent(this, ProfileActivity.class));
                 return true;
             } else if (id == R.id.nav_chat) {
+                // Vai para a lista de Mensagens
                 startActivity(new Intent(this, ChatActivity.class));
+                return true;
+            } else if (id == R.id.nav_vitrine) {
+                // Vai para a Vitrine de serviços
+                startActivity(new Intent(this, VitrineActivity.class));
                 return true;
             }
             return true;
         });
     }
 
-    // Mostra ou esconde um painel de filtro
+    // Lógica para mostrar um painel e esconder o outro (alternância)
     private void togglePanel(View panel) {
         if (panel.getVisibility() == View.VISIBLE) {
             panel.setVisibility(View.GONE);
         } else {
-            hideAllPanels();
+            hideAllPanels(); // Garante que apenas um painel esteja aberto por vez
             panel.setVisibility(View.VISIBLE);
         }
     }
 
-    // Esconde todos os painéis de filtro
+    // Esconde todos os painéis extras de filtro
     private void hideAllPanels() {
         panelPreco.setVisibility(View.GONE);
         panelDistancia.setVisibility(View.GONE);
     }
 
-    // Cria um diálogo com lista de marcação (CheckBox) para filtros múltiplos
+    // Cria um diálogo com lista de opções (CheckBox) para filtros de múltipla escolha
     private void showMultiSelectDialog(String title, String[] options, List<String> selectedList, TextView targetTextView) {
         View view = LayoutInflater.from(this).inflate(R.layout.dialog_filtros_multi, null);
         LinearLayout container = view.findViewById(R.id.llOptionsContainer);
         List<CheckBox> checkBoxes = new ArrayList<>();
 
+        // Cria dinamicamente um CheckBox para cada opção da lista
         for (String option : options) {
             CheckBox cb = new CheckBox(this);
             cb.setText(option);
@@ -144,6 +153,7 @@ public class HomeActivity extends AppCompatActivity implements OnMapReadyCallbac
                 .setTitle(title)
                 .setView(view)
                 .setPositiveButton("OK", (dialog, which) -> {
+                    // Ao clicar OK, salva as opções marcadas e atualiza o texto na tela
                     selectedList.clear();
                     for (CheckBox cb : checkBoxes) {
                         if (cb.isChecked()) {
@@ -153,6 +163,7 @@ public class HomeActivity extends AppCompatActivity implements OnMapReadyCallbac
                     updateTargetTextView(selectedList, targetTextView);
                 })
                 .setNeutralButton("Limpar", (dialog, which) -> {
+                    // Botão para desmarcar tudo de uma vez
                     selectedList.clear();
                     updateTargetTextView(selectedList, targetTextView);
                 })
@@ -160,24 +171,26 @@ public class HomeActivity extends AppCompatActivity implements OnMapReadyCallbac
                 .show();
     }
 
-    // Atualiza o texto que mostra os filtros selecionados
+    // Atualiza o texto do botão de filtro conforme a quantidade de itens escolhidos
     private void updateTargetTextView(List<String> selectedList, TextView tv) {
         if (selectedList.isEmpty()) {
             tv.setText(R.string.todas);
         } else if (selectedList.size() == 1) {
-            tv.setText(selectedList.get(0));
+            tv.setText(selectedList.get(0)); // Mostra o nome do único item
         } else {
-            tv.setText(selectedList.size() + " selecionadas");
+            // Mostra algo como "2 selecionadas"
+            String text = selectedList.size() + " " + getString(R.string.selecionadas_lower);
+            tv.setText(text);
         }
     }
 
-    // Configura o comportamento do filtro de preço
+    // Configura a sincronia entre o Slider de preço e os campos de texto manual
     private void setupPriceFilter() {
         sliderPreco = findViewById(R.id.sliderPreco);
         editMinPreco = findViewById(R.id.editMinPreco);
         editMaxPreco = findViewById(R.id.editMaxPreco);
 
-        // Atualiza os campos de texto quando o slider é movido
+        // Quando o usuário arrasta o slider, atualiza o texto nos campos
         sliderPreco.addOnChangeListener((slider, value, fromUser) -> {
             if (fromUser) {
                 isUpdating = true;
@@ -187,10 +200,12 @@ public class HomeActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         });
 
+        // Quando o campo perde o foco, aplica o valor digitado no slider
         View.OnFocusChangeListener focusListener = (v, hasFocus) -> {
             if (!hasFocus) applyPriceInputs();
         };
 
+        // Quando o usuário aperta "Enter" no teclado, aplica os valores
         TextView.OnEditorActionListener editorActionListener = (v, actionId, event) -> {
             if (actionId == EditorInfo.IME_ACTION_DONE || (event != null && event.getKeyCode() == KeyEvent.KEYCODE_ENTER && event.getAction() == KeyEvent.ACTION_DOWN)) {
                 applyPriceInputs();
@@ -204,19 +219,21 @@ public class HomeActivity extends AppCompatActivity implements OnMapReadyCallbac
         editMinPreco.setOnEditorActionListener(editorActionListener);
         editMaxPreco.setOnEditorActionListener(editorActionListener);
 
+        // Define os valores iniciais
         editMinPreco.setText(formatCurrency(sliderPreco.getValues().get(0)));
         editMaxPreco.setText(formatCurrency(sliderPreco.getValues().get(1)));
     }
 
-    // Aplica os valores digitados manualmente no filtro de preço
+    // Converte o que foi digitado no campo de preço e ajusta a posição do Slider
     private void applyPriceInputs() {
         if (isUpdating) return;
         float min = parseCurrency(editMinPreco.getText().toString());
         float max = parseCurrency(editMaxPreco.getText().toString());
         
+        // Garante que os valores estejam dentro do limite (0 a 10.000)
         min = Math.max(0, Math.min(10000, min));
         max = Math.max(0, Math.min(10000, max));
-        if (max < min) max = min;
+        if (max < min) max = min; // Impede que o máximo seja menor que o mínimo
 
         isUpdating = true;
         sliderPreco.setValues(min, max);
@@ -225,13 +242,13 @@ public class HomeActivity extends AppCompatActivity implements OnMapReadyCallbac
         isUpdating = false;
     }
 
-    // Formata o valor numérico para moeda real (R$)
+    // Formata o número como moeda brasileira (ex: 100.5 -> R$ 100,50)
     private String formatCurrency(float val) {
         NumberFormat nf = NumberFormat.getCurrencyInstance(new Locale("pt", "BR"));
         return nf.format(val);
     }
 
-    // Converte texto de moeda para número decimal
+    // Converte texto de dinheiro (com R$ e vírgula) de volta para número decimal
     private float parseCurrency(String input) {
         if (input == null || input.isEmpty()) return 0;
         String clean = input.replaceAll("[^0-9,]", "").replace(",", ".");
@@ -240,13 +257,13 @@ public class HomeActivity extends AppCompatActivity implements OnMapReadyCallbac
         } catch (Exception e) { return 0; }
     }
 
-    // Configura o comportamento do filtro de distância
+    // Configura a sincronia do filtro de Distância (Slider e Campos de Texto)
     private void setupDistanceFilter() {
         sliderDistancia = findViewById(R.id.sliderDistancia);
         editMinDistancia = findViewById(R.id.editMinDistancia);
         editMaxDistancia = findViewById(R.id.editMaxDistancia);
 
-        // Atualiza os campos de texto quando o slider de distância é movido
+        // Atualiza campos de texto ao arrastar o slider de km
         sliderDistancia.addOnChangeListener((slider, value, fromUser) -> {
             if (fromUser) {
                 isUpdating = true;
@@ -273,16 +290,18 @@ public class HomeActivity extends AppCompatActivity implements OnMapReadyCallbac
         editMinDistancia.setOnEditorActionListener(editorActionListener);
         editMaxDistancia.setOnEditorActionListener(editorActionListener);
 
+        // Define valores iniciais (0 km e 5 km)
         editMinDistancia.setText(formatDistance(sliderDistancia.getValues().get(0)));
         editMaxDistancia.setText(formatDistance(sliderDistancia.getValues().get(1)));
     }
 
-    // Aplica os valores digitados manualmente no filtro de distância
+    // Converte e valida os valores digitados no campo de distância
     private void applyDistanceInputs() {
         if (isUpdating) return;
         float min = parseDistanceSmart(editMinDistancia.getText().toString());
         float max = parseDistanceSmart(editMaxDistancia.getText().toString());
 
+        // Limite de 0 a 5 km
         min = Math.max(0, Math.min(5, min));
         max = Math.max(0, Math.min(5, max));
         if (max < min) max = min;
@@ -294,7 +313,7 @@ public class HomeActivity extends AppCompatActivity implements OnMapReadyCallbac
         isUpdating = false;
     }
 
-    // Formata a distância para metros (m) ou quilômetros (km)
+    // Formata a distância: mostra metros se for < 1km, senão mostra km
     private String formatDistance(float valueInKm) {
         if (valueInKm < 1.0f) {
             int meters = (int) (valueInKm * 1000);
@@ -305,7 +324,7 @@ public class HomeActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
-    // Converte texto de distância para valor numérico, entendendo unidades
+    // Entende o que o usuário digita como distância (ex: "500m" vira 0.5km)
     private float parseDistanceSmart(String input) {
         if (input == null || input.isEmpty()) return 0;
         String lowInput = input.toLowerCase().trim();
@@ -313,22 +332,39 @@ public class HomeActivity extends AppCompatActivity implements OnMapReadyCallbac
         try {
             float val = clean.isEmpty() ? 0 : Float.parseFloat(clean);
             
-            // Reconhece metros e variações
+            // Se o usuário escreveu "metro" ou só "m", divide por 1000
             if (lowInput.contains("metro") || (lowInput.contains("m") && !lowInput.contains("km"))) {
                 return val / 1000f;
             }
             
-            // Se for um número grande sem unidade (ex: 500), assume metros
+            // Se digitou um número alto (ex: 500) sem unidade, assume que são metros
             if (!lowInput.contains("k") && val >= 10) {
                 return val / 1000f;
             }
             
-            return val; // Assume km para o restante
+            return val; // Por padrão, assume que são quilômetros
         } catch (Exception e) { return 0; }
+    }
+
+    // Configura a barra de busca da tela inicial
+    private void setupHomeSearch() {
+        EditText editSearch = findViewById(R.id.editSearchHome);
+        editSearch.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == EditorInfo.IME_ACTION_SEARCH || actionId == EditorInfo.IME_ACTION_DONE) {
+                String query = editSearch.getText().toString().trim();
+                if (!query.isEmpty()) {
+                    Intent intent = new Intent(this, VitrineActivity.class);
+                    intent.putExtra("searchQuery", query);
+                    startActivity(intent);
+                }
+                return true;
+            }
+            return false;
+        });
     }
 
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
-        // Chamado quando o mapa está pronto para ser usado
+        // Função chamada pelo Android quando o mapa termina de carregar
     }
 }

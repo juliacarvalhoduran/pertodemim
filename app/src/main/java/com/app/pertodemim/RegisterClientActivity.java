@@ -1,54 +1,60 @@
 package com.app.pertodemim;
 
+import android.app.DatePickerDialog;
 import android.content.Intent;
+import java.util.Calendar;
+import java.util.Locale;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Patterns;
+import android.view.View;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
+import android.widget.Toast;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import com.app.pertodemim.model.User;
+import com.app.pertodemim.model.UserResponse;
+import com.app.pertodemim.network.RetrofitClient;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
-
 import java.util.Objects;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
-// Tela para cadastro de novos Clientes (usuários comuns)
+// Tela para cadastro de novos Clientes integrada com a API
 public class RegisterClientActivity extends AppCompatActivity {
 
-    // Containers para exibir mensagens de erro e campos de texto
     private TextInputLayout tilNome, tilEmail, tilTelefone, tilCPF, tilNascimento,
             tilCEP, tilLogradouro, tilNumero, tilBairro, tilCidade, tilEstado,
             tilSenha, tilConfirmarSenha;
     private TextInputEditText editNome, editEmail, editTelefone, editCPF, editNascimento,
-            editCEP, editLogradouro, editNumero, editBairro, editCidade, editEstado,
+            editCEP, editLogradouro, editNumero, editComplemento, editBairro, editCidade, editEstado,
             editSenha, editConfirmarSenha;
+    private MaterialButton btnRegister;
+    private ProgressBar pbRegister;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // Define o layout da tela de cadastro de cliente
         setContentView(R.layout.activity_register_client);
 
-        initViews(); // Inicializa todos os componentes da interface
-        setupClearErrorOnTouch(); // Configura para remover erros ao clicar nos campos
+        initViews();
+        setupClearErrorOnTouch();
+        setupDatePicker();
 
-        // Botão para voltar à tela anterior
         ImageView btnBack = findViewById(R.id.btnBack);
         btnBack.setOnClickListener(v -> finish());
 
-        // Ação do botão de cadastrar
-        MaterialButton btnRegister = findViewById(R.id.btnRegister);
         btnRegister.setOnClickListener(v -> {
-            // Se todos os campos estiverem válidos, finaliza o cadastro e vai para a Home
             if (validateFields()) {
-                Intent intent = new Intent(this, HomeActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                startActivity(intent);
+                registerUser();
             }
         });
     }
 
-    // Liga as variáveis do código aos componentes do arquivo XML (layout)
     private void initViews() {
         tilNome = findViewById(R.id.tilNome);
         tilEmail = findViewById(R.id.tilEmail);
@@ -72,44 +78,132 @@ public class RegisterClientActivity extends AppCompatActivity {
         editCEP = findViewById(R.id.editCEP);
         editLogradouro = findViewById(R.id.editLogradouro);
         editNumero = findViewById(R.id.editNumero);
+        editComplemento = findViewById(R.id.editComplemento);
         editBairro = findViewById(R.id.editBairro);
         editCidade = findViewById(R.id.editCidade);
         editEstado = findViewById(R.id.editEstado);
         editSenha = findViewById(R.id.editSenha);
         editConfirmarSenha = findViewById(R.id.editConfirmarSenha);
+        
+        btnRegister = findViewById(R.id.btnRegister);
+        pbRegister = findViewById(R.id.pbRegister);
     }
 
-    // Função que limpa os avisos de erro quando o usuário começa a digitar no campo
     private void setupClearErrorOnTouch() {
-        TextInputEditText[] fields = {editNome, editEmail, editTelefone, editCPF, editNascimento, editCEP, 
-                editLogradouro, editNumero, editBairro, editCidade, editEstado, editSenha, editConfirmarSenha};
+        View[] fields = {editNome, editEmail, editTelefone, editCPF, editNascimento, editCEP, 
+                editLogradouro, editNumero, editComplemento, editBairro, editCidade, editEstado, editSenha, editConfirmarSenha};
         TextInputLayout[] layouts = {tilNome, tilEmail, tilTelefone, tilCPF, tilNascimento, tilCEP, 
-                tilLogradouro, tilNumero, tilBairro, tilCidade, tilEstado, tilSenha, tilConfirmarSenha};
+                tilLogradouro, tilNumero, null, tilBairro, tilCidade, tilEstado, tilSenha, tilConfirmarSenha};
 
         for (int i = 0; i < fields.length; i++) {
             final TextInputLayout layout = layouts[i];
-            fields[i].setOnFocusChangeListener((v, hasFocus) -> { if (hasFocus) layout.setError(null); });
-            fields[i].setOnClickListener(v -> layout.setError(null));
+            if (layout != null && fields[i] != null) {
+                fields[i].setOnFocusChangeListener((v, hasFocus) -> { if (hasFocus) layout.setError(null); });
+                fields[i].setOnClickListener(v -> layout.setError(null));
+            }
         }
     }
 
-    // Valida todos os campos (nome, e-mail, telefone, CPF, endereço, senhas)
+    private void setupDatePicker() {
+        editNascimento.setFocusable(false);
+        editNascimento.setClickable(true);
+        View.OnClickListener listener = v -> {
+            Calendar calendar = Calendar.getInstance();
+            int year = calendar.get(Calendar.YEAR) - 18; // Sugere 18 anos atrás
+            int month = calendar.get(Calendar.MONTH);
+            int day = calendar.get(Calendar.DAY_OF_MONTH);
+
+            DatePickerDialog datePickerDialog = new DatePickerDialog(this, (view, selectedYear, selectedMonth, selectedDay) -> {
+                String date = String.format(Locale.getDefault(), "%04d-%02d-%02d", selectedYear, selectedMonth + 1, selectedDay);
+                editNascimento.setText(date);
+                tilNascimento.setError(null);
+            }, year, month, day);
+            datePickerDialog.show();
+        };
+        editNascimento.setOnClickListener(listener);
+        tilNascimento.setEndIconOnClickListener(listener);
+    }
+
+    private void registerUser() {
+        showLoading(true);
+        
+        User user = new User();
+        user.setNome(getValue(editNome));
+        user.setEmail(getValue(editEmail));
+        user.setSenha(getValue(editSenha));
+        user.setTipo("cliente");
+        user.setTelefone(removeMask(getValue(editTelefone)));
+        user.setCpfCnpj(removeMask(getValue(editCPF)));
+        user.setLogradouro(getValue(editLogradouro));
+        user.setCep(removeMask(getValue(editCEP)));
+        user.setNumero(getValue(editNumero));
+        user.setBairro(getValue(editBairro));
+        user.setCidade(getValue(editCidade));
+        user.setEstado(getValue(editEstado));
+        user.setComplemento(getValue(editComplemento));
+        user.setDataNascimento(getValue(editNascimento));
+
+        RetrofitClient.getApiService().createUser(user).enqueue(new Callback<UserResponse>() {
+            @Override
+            public void onResponse(@NonNull Call<UserResponse> call, @NonNull Response<UserResponse> response) {
+                showLoading(false);
+                if (response.isSuccessful() && response.body() != null) {
+                    UserResponse res = response.body();
+                    if (res.getUsuario() != null) {
+                        Toast.makeText(RegisterClientActivity.this, res.getMensagem(), Toast.LENGTH_LONG).show();
+                        Intent intent = new Intent(RegisterClientActivity.this, HomeActivity.class);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                        startActivity(intent);
+                    } else if (res.getErros() != null) {
+                        StringBuilder erros = new StringBuilder();
+                        for (String e : res.getErros()) {
+                            erros.append(e).append("\n");
+                        }
+                        Toast.makeText(RegisterClientActivity.this, erros.toString(), Toast.LENGTH_LONG).show();
+                    } else if (res.getErro() != null) {
+                        Toast.makeText(RegisterClientActivity.this, res.getErro(), Toast.LENGTH_LONG).show();
+                    }
+                } else {
+                    Toast.makeText(RegisterClientActivity.this, "Erro HTTP: " + response.code(), Toast.LENGTH_LONG).show();
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<UserResponse> call, @NonNull Throwable t) {
+                showLoading(false);
+                Toast.makeText(RegisterClientActivity.this, "Erro de conexão: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void showLoading(boolean loading) {
+        btnRegister.setEnabled(!loading);
+        btnRegister.setText(loading ? "" : getString(R.string.cadastrar));
+        pbRegister.setVisibility(loading ? View.VISIBLE : View.GONE);
+    }
+
+    private String removeMask(String text) {
+        return text.replaceAll("[^0-9]", "");
+    }
+
+    private String getValue(TextInputEditText et) {
+        return et.getText() != null ? et.getText().toString().trim() : "";
+    }
+
     private boolean validateFields() {
         boolean valid = true;
-        resetErrors(); // Começa limpando erros antigos
+        resetErrors();
 
-        // Valida campos obrigatórios simples
         if (isEmpty(editNome)) { tilNome.setError(getString(R.string.error_required)); valid = false; }
         if (isEmpty(editTelefone)) { tilTelefone.setError(getString(R.string.error_required)); valid = false; }
-        if (isEmpty(editNascimento)) { tilNascimento.setError(getString(R.string.error_required)); valid = false; }
         if (isEmpty(editLogradouro)) { tilLogradouro.setError(getString(R.string.error_required)); valid = false; }
         if (isEmpty(editNumero)) { tilNumero.setError(getString(R.string.error_required)); valid = false; }
         if (isEmpty(editBairro)) { tilBairro.setError(getString(R.string.error_required)); valid = false; }
         if (isEmpty(editCidade)) { tilCidade.setError(getString(R.string.error_required)); valid = false; }
         if (isEmpty(editEstado)) { tilEstado.setError(getString(R.string.error_required)); valid = false; }
+        if (isEmpty(editNascimento)) { tilNascimento.setError(getString(R.string.error_required)); valid = false; }
 
-        // Validação de E-mail
-        String email = editEmail.getText() != null ? editEmail.getText().toString().trim() : "";
+        String email = getValue(editEmail);
         if (TextUtils.isEmpty(email)) {
             tilEmail.setError(getString(R.string.error_required));
             valid = false;
@@ -118,8 +212,7 @@ public class RegisterClientActivity extends AppCompatActivity {
             valid = false;
         }
 
-        // Validação de CPF (exige 11 dígitos)
-        String cpf = editCPF.getText() != null ? editCPF.getText().toString().trim() : "";
+        String cpf = removeMask(getValue(editCPF));
         if (TextUtils.isEmpty(cpf)) {
             tilCPF.setError(getString(R.string.error_required));
             valid = false;
@@ -128,8 +221,7 @@ public class RegisterClientActivity extends AppCompatActivity {
             valid = false;
         }
 
-        // Validação de CEP (exige 8 dígitos)
-        String cep = editCEP.getText() != null ? editCEP.getText().toString().trim() : "";
+        String cep = removeMask(getValue(editCEP));
         if (TextUtils.isEmpty(cep)) {
             tilCEP.setError(getString(R.string.error_required));
             valid = false;
@@ -138,19 +230,21 @@ public class RegisterClientActivity extends AppCompatActivity {
             valid = false;
         }
 
-        // Validação de Senha e Confirmação
-        String senha = editSenha.getText() != null ? editSenha.getText().toString() : "";
-        String confirmacao = editConfirmarSenha.getText() != null ? editConfirmarSenha.getText().toString() : "";
+        String senha = getValue(editSenha);
+        String confirmacao = getValue(editConfirmarSenha);
 
         if (TextUtils.isEmpty(senha)) {
             tilSenha.setError(getString(R.string.error_required));
             valid = false;
+        } else if (senha.length() < 6) {
+            tilSenha.setError("Mínimo 6 caracteres");
+            valid = false;
         }
+        
         if (TextUtils.isEmpty(confirmacao)) {
             tilConfirmarSenha.setError(getString(R.string.error_required));
             valid = false;
-        } else if (!Objects.equals(senha, confirmacao)) {
-            // Se as senhas não forem iguais, avisa o usuário
+        } else if (!senha.equals(confirmacao)) {
             tilSenha.setError(getString(R.string.error_password_mismatch));
             tilConfirmarSenha.setError(getString(R.string.error_password_mismatch));
             valid = false;
@@ -159,7 +253,6 @@ public class RegisterClientActivity extends AppCompatActivity {
         return valid;
     }
 
-    // Limpa todas as mensagens de erro visuais da tela
     private void resetErrors() {
         tilNome.setError(null); tilEmail.setError(null); tilTelefone.setError(null);
         tilCPF.setError(null); tilNascimento.setError(null); tilCEP.setError(null);
@@ -168,7 +261,6 @@ public class RegisterClientActivity extends AppCompatActivity {
         tilConfirmarSenha.setError(null);
     }
 
-    // Função auxiliar que verifica se um campo de texto está vazio
     private boolean isEmpty(TextInputEditText et) {
         return et.getText() == null || TextUtils.isEmpty(et.getText().toString().trim());
     }

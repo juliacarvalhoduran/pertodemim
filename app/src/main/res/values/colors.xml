@@ -6,4 +6,7 @@
     <color name="terracota">#BF6548</color>
     <color name="text_gray">#757575</color>
     <color name="card_white">#FFFFFF</color>
+    <color name="black">#000000</color>
+    <color name="avatar_tan">#E8D8C3</color>
+    <color name="logout_red">#E53935</color>
 </resources>

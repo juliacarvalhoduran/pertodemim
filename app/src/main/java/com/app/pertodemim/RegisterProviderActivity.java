@@ -1,6 +1,8 @@
 package com.app.pertodemim;
 
+import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
+import java.util.Calendar;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -8,17 +10,21 @@ import android.util.Patterns;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AutoCompleteTextView;
-import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.RadioButton;
-import android.widget.RadioGroup;
+import android.widget.ProgressBar;
+import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.app.pertodemim.model.User;
+import com.app.pertodemim.model.UserResponse;
+import com.app.pertodemim.network.RetrofitClient;
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
@@ -30,64 +36,61 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
-// Tela para cadastro de Fornecedores (empresas ou prestadores de serviço)
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
+// Tela para cadastro de Fornecedores integrada com a API
 public class RegisterProviderActivity extends AppCompatActivity {
 
-    // Componentes de interface para dados da empresa, contato, endereço e horários
-    private TextInputLayout tilNomeFantasia, tilRazaoSocial, tilCNPJ, tilCategoria,
+    private TextInputLayout tilNomeFantasia, tilRazaoSocial, tilCNPJ, tilNascimento, tilCategoria,
             tilDescricao, tilEmail, tilWhatsapp, tilCEP,
             tilLogradouro, tilNumero, tilBairro, tilCidade, tilEstado,
             tilDias, tilAbertura, tilFechamento, tilSenha, tilConfirmarSenha;
 
-    private TextInputEditText editNomeFantasia, editRazaoSocial, editCNPJ,
+    private TextInputEditText editNomeFantasia, editRazaoSocial, editCNPJ, editNascimento,
             editDescricao, editEmail, editWhatsapp, editCEP,
             editLogradouro, editNumero, editBairro, editCidade, editEstado,
-            editSenha, editConfirmarSenha;
+            editSenha, editConfirmarSenha, editComplemento;
 
     private AutoCompleteTextView editCategoria, editDias, editAbertura, editFechamento;
+    private MaterialButton btnRegister;
+    private ProgressBar pbRegister;
 
-    // Variáveis para guardar os dias da semana e categorias selecionadas
     private boolean[] selectedDays;
     private final ArrayList<Integer> dayList = new ArrayList<>();
     private String[] daysArray;
-    private Set<String> selectedCategories = new HashSet<>();
+    private final Set<String> selectedCategories = new HashSet<>();
     private String lastOtherCategoryText = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // Define o layout da tela de cadastro de fornecedor
         setContentView(R.layout.activity_register_provider);
 
-        initViews(); // Inicializa os componentes
-        setupClearErrorOnTouch(); // Limpa avisos de erro ao interagir
+        initViews();
+        setupClearErrorOnTouch();
 
-        // Botão voltar
         ImageView btnBack = findViewById(R.id.btnBack);
         btnBack.setOnClickListener(v -> finish());
 
-        // Configura seletores especiais (Categorias, Dias e Horários)
         setupCategoriasDialog();
         setupDayPicker();
+        setupDatePicker();
         setupTimePickers();
 
-        // Ação do botão "Cadastrar"
-        Button btnRegister = findViewById(R.id.btnRegister);
         btnRegister.setOnClickListener(v -> {
-            // Se as validações passarem, finaliza e vai para a Home
             if (validateFields()) {
-                Intent intent = new Intent(this, HomeActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                startActivity(intent);
+                registerProvider();
             }
         });
     }
 
-    // Liga as variáveis aos IDs definidos no layout XML
     private void initViews() {
         tilNomeFantasia = findViewById(R.id.tilNomeFantasia);
         tilRazaoSocial = findViewById(R.id.tilRazaoSocial);
         tilCNPJ = findViewById(R.id.tilCNPJ);
+        tilNascimento = findViewById(R.id.tilNascimento);
         tilCategoria = findViewById(R.id.tilCategoria);
         tilDescricao = findViewById(R.id.tilDescricao);
         tilEmail = findViewById(R.id.tilEmail);
@@ -107,6 +110,7 @@ public class RegisterProviderActivity extends AppCompatActivity {
         editNomeFantasia = findViewById(R.id.editNomeFantasia);
         editRazaoSocial = findViewById(R.id.editRazaoSocial);
         editCNPJ = findViewById(R.id.editCNPJ);
+        editNascimento = findViewById(R.id.editNascimento);
         editDescricao = findViewById(R.id.editDescricao);
         editEmail = findViewById(R.id.editEmail);
         editWhatsapp = findViewById(R.id.editWhatsapp);
@@ -118,13 +122,16 @@ public class RegisterProviderActivity extends AppCompatActivity {
         editEstado = findViewById(R.id.editEstado);
         editSenha = findViewById(R.id.editSenha);
         editConfirmarSenha = findViewById(R.id.editConfirmarSenha);
+        editComplemento = findViewById(R.id.editComplemento);
 
         editCategoria = findViewById(R.id.editCategoria);
         editDias = findViewById(R.id.editDias);
         editAbertura = findViewById(R.id.editAbertura);
         editFechamento = findViewById(R.id.editFechamento);
+        
+        btnRegister = findViewById(R.id.btnRegister);
+        pbRegister = findViewById(R.id.pbRegister);
 
-        // Prepara a lista de dias da semana para o seletor
         daysArray = new String[]{
                 getString(R.string.segunda), getString(R.string.terca), getString(R.string.quarta),
                 getString(R.string.quinta), getString(R.string.sexta), getString(R.string.sabado),
@@ -133,25 +140,118 @@ public class RegisterProviderActivity extends AppCompatActivity {
         selectedDays = new boolean[daysArray.length];
     }
 
-    // Remove erros visuais quando o usuário interage com os campos
     private void setupClearErrorOnTouch() {
-        View[] fields = {editNomeFantasia, editRazaoSocial, editCNPJ, editCategoria, 
+        View[] fields = {editNomeFantasia, editRazaoSocial, editCNPJ, editNascimento, editCategoria, 
                 editDescricao, editEmail, editWhatsapp, editCEP, editLogradouro, editNumero, 
                 editBairro, editCidade, editEstado, editDias, editAbertura, editFechamento, editSenha, editConfirmarSenha};
-        TextInputLayout[] layouts = {tilNomeFantasia, tilRazaoSocial, tilCNPJ, tilCategoria, 
+        TextInputLayout[] layouts = {tilNomeFantasia, tilRazaoSocial, tilCNPJ, tilNascimento, tilCategoria, 
                 tilDescricao, tilEmail, tilWhatsapp, tilCEP, tilLogradouro, tilNumero, 
                 tilBairro, tilCidade, tilEstado, tilDias, tilAbertura, tilFechamento, tilSenha, tilConfirmarSenha};
 
         for (int i = 0; i < fields.length; i++) {
             final TextInputLayout layout = layouts[i];
-            if (fields[i] != null) {
+            if (layout != null && fields[i] != null) {
                 fields[i].setOnFocusChangeListener((v, hasFocus) -> { if (hasFocus) layout.setError(null); });
                 fields[i].setOnClickListener(v -> layout.setError(null));
             }
         }
     }
 
-    // Configura o diálogo para selecionar as categorias de serviço
+    private void setupDatePicker() {
+        editNascimento.setFocusable(false);
+        editNascimento.setClickable(true);
+        View.OnClickListener listener = v -> {
+            Calendar calendar = Calendar.getInstance();
+            int year = calendar.get(Calendar.YEAR) - 18;
+            int month = calendar.get(Calendar.MONTH);
+            int day = calendar.get(Calendar.DAY_OF_MONTH);
+
+            DatePickerDialog datePickerDialog = new DatePickerDialog(this, (view, selectedYear, selectedMonth, selectedDay) -> {
+                String date = String.format(Locale.getDefault(), "%04d-%02d-%02d", selectedYear, selectedMonth + 1, selectedDay);
+                editNascimento.setText(date);
+                tilNascimento.setError(null);
+            }, year, month, day);
+            datePickerDialog.show();
+        };
+        editNascimento.setOnClickListener(listener);
+        tilNascimento.setEndIconOnClickListener(listener);
+    }
+
+    private void registerProvider() {
+        showLoading(true);
+
+        User user = new User();
+        String nomeEmpresa = getValue(editNomeFantasia);
+        if (nomeEmpresa.isEmpty()) nomeEmpresa = getValue(editRazaoSocial);
+        
+        user.setNome(nomeEmpresa);
+        user.setEmail(getValue(editEmail));
+        user.setSenha(getValue(editSenha));
+        user.setTipo("fornecedor");
+        user.setTelefone(removeMask(getValue(editWhatsapp)));
+        user.setCpfCnpj(removeMask(getValue(editCNPJ)));
+        user.setLogradouro(getValue(editLogradouro));
+        user.setCep(removeMask(getValue(editCEP)));
+        user.setNumero(getValue(editNumero));
+        user.setBairro(getValue(editBairro));
+        user.setCidade(getValue(editCidade));
+        user.setEstado(getValue(editEstado));
+        user.setComplemento(getValue(editComplemento));
+        user.setDataNascimento(getValue(editNascimento));
+
+        RetrofitClient.getApiService().createUser(user).enqueue(new Callback<UserResponse>() {
+            @Override
+            public void onResponse(@NonNull Call<UserResponse> call, @NonNull Response<UserResponse> response) {
+                showLoading(false);
+                if (response.isSuccessful() && response.body() != null) {
+                    Toast.makeText(RegisterProviderActivity.this, response.body().getMensagem(), Toast.LENGTH_LONG).show();
+                    Intent intent = new Intent(RegisterProviderActivity.this, HomeActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(intent);
+                } else {
+                    String errorMsg = "Erro no cadastro. Verifique os dados.";
+                    try {
+                        UserResponse res = new com.google.gson.Gson().fromJson(response.errorBody().string(), UserResponse.class);
+                        if (res != null) {
+                            if (res.getErros() != null) {
+                                StringBuilder sb = new StringBuilder();
+                                for (String e : res.getErros()) sb.append(e).append("\n");
+                                errorMsg = sb.toString();
+                            } else if (res.getErro() != null) {
+                                errorMsg = res.getErro();
+                            }
+                        }
+                    } catch (Exception ignored) {}
+                    Toast.makeText(RegisterProviderActivity.this, errorMsg, Toast.LENGTH_LONG).show();
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<UserResponse> call, @NonNull Throwable t) {
+                showLoading(false);
+                Toast.makeText(RegisterProviderActivity.this, "Erro de conexão: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void showLoading(boolean loading) {
+        btnRegister.setEnabled(!loading);
+        btnRegister.setText(loading ? "" : getString(R.string.cadastrar));
+        pbRegister.setVisibility(loading ? View.VISIBLE : View.GONE);
+    }
+
+    private String removeMask(String text) {
+        return text.replaceAll("[^0-9]", "");
+    }
+
+    private String getValue(TextInputEditText et) {
+        return et.getText() != null ? et.getText().toString().trim() : "";
+    }
+
+    private String getValue(AutoCompleteTextView et) {
+        return et.getText() != null ? et.getText().toString().trim() : "";
+    }
+
     private void setupCategoriasDialog() {
         View.OnClickListener listener = v -> {
             tilCategoria.setError(null);
@@ -159,7 +259,9 @@ public class RegisterProviderActivity extends AppCompatActivity {
             LinearLayout container = view.findViewById(R.id.llOptionsContainer);
             
             String[] categorias = {
-                "Beleza e Estética", "Saúde", "Alimentação", "Educação", "Manutenção", "Tecnologia"
+                getString(R.string.beleza_estetica), getString(R.string.saude), 
+                getString(R.string.alimentacao), getString(R.string.educacao), 
+                getString(R.string.manutencao), getString(R.string.tecnologia)
             };
             
             List<CheckBox> checkBoxes = new ArrayList<>();
@@ -172,9 +274,8 @@ public class RegisterProviderActivity extends AppCompatActivity {
                 checkBoxes.add(cb);
             }
 
-            // Opção "Outros" que permite digitar uma nova categoria
             CheckBox cbOutros = new CheckBox(this);
-            cbOutros.setText("Outros");
+            cbOutros.setText(R.string.outra_categoria);
             cbOutros.setPadding(16, 16, 16, 16);
             cbOutros.setChecked(selectedCategories.contains("Outros"));
             container.addView(cbOutros);
@@ -186,9 +287,7 @@ public class RegisterProviderActivity extends AppCompatActivity {
             editOther.setVisibility(cbOutros.isChecked() ? View.VISIBLE : View.GONE);
             container.addView(editOther);
             
-            cbOutros.setOnCheckedChangeListener((buttonView, isChecked) -> {
-                editOther.setVisibility(isChecked ? View.VISIBLE : View.GONE);
-            });
+            cbOutros.setOnCheckedChangeListener((buttonView, isChecked) -> editOther.setVisibility(isChecked ? View.VISIBLE : View.GONE));
 
             new AlertDialog.Builder(this)
                 .setTitle(R.string.selecione_categoria)
@@ -196,7 +295,6 @@ public class RegisterProviderActivity extends AppCompatActivity {
                 .setPositiveButton("OK", (dialog, which) -> {
                     selectedCategories.clear();
                     StringBuilder sb = new StringBuilder();
-                    
                     for (CheckBox cb : checkBoxes) {
                         if (cb.isChecked()) {
                             selectedCategories.add(cb.getText().toString());
@@ -204,7 +302,6 @@ public class RegisterProviderActivity extends AppCompatActivity {
                             sb.append(cb.getText().toString());
                         }
                     }
-                    
                     if (cbOutros.isChecked()) {
                         selectedCategories.add("Outros");
                         lastOtherCategoryText = editOther.getText().toString();
@@ -221,7 +318,6 @@ public class RegisterProviderActivity extends AppCompatActivity {
         tilCategoria.setEndIconOnClickListener(listener);
     }
 
-    // Configura o diálogo para selecionar os dias de funcionamento
     private void setupDayPicker() {
         View.OnClickListener listener = v -> {
             tilDias.setError(null);
@@ -252,7 +348,6 @@ public class RegisterProviderActivity extends AppCompatActivity {
         tilDias.setEndIconOnClickListener(listener);
     }
 
-    // Configura os seletores de horário (Relógio)
     private void setupTimePickers() {
         View.OnClickListener aperturaListener = v -> showTimePicker(editAbertura);
         editAbertura.setOnClickListener(aperturaListener);
@@ -263,7 +358,6 @@ public class RegisterProviderActivity extends AppCompatActivity {
         tilFechamento.setEndIconOnClickListener(fechamentoListener);
     }
 
-    // Mostra o relógio para escolher hora e minuto
     private void showTimePicker(AutoCompleteTextView et) {
         new TimePickerDialog(this, (view, h, m) -> {
             et.setText(String.format(Locale.getDefault(), "%02d:%02d", h, m));
@@ -271,13 +365,10 @@ public class RegisterProviderActivity extends AppCompatActivity {
         }, 12, 0, true).show();
     }
 
-    // Valida se todos os campos obrigatórios foram preenchidos corretamente
     private boolean validateFields() {
         boolean valid = true;
         resetErrors();
 
-        // Valida campos de texto simples
-        if (isEmpty(editNomeFantasia)) { tilNomeFantasia.setError(getString(R.string.error_required)); valid = false; }
         if (isEmpty(editRazaoSocial)) { tilRazaoSocial.setError(getString(R.string.error_required)); valid = false; }
         if (isEmpty(editDescricao)) { tilDescricao.setError(getString(R.string.error_required)); valid = false; }
         if (isEmpty(editWhatsapp)) { tilWhatsapp.setError(getString(R.string.error_required)); valid = false; }
@@ -286,48 +377,54 @@ public class RegisterProviderActivity extends AppCompatActivity {
         if (isEmpty(editBairro)) { tilBairro.setError(getString(R.string.error_required)); valid = false; }
         if (isEmpty(editCidade)) { tilCidade.setError(getString(R.string.error_required)); valid = false; }
         if (isEmpty(editEstado)) { tilEstado.setError(getString(R.string.error_required)); valid = false; }
+        if (isEmpty(editNascimento)) { tilNascimento.setError(getString(R.string.error_required)); valid = false; }
         if (isEmpty(editDias)) { tilDias.setError(getString(R.string.error_required)); valid = false; }
         if (isEmpty(editCategoria)) { tilCategoria.setError(getString(R.string.error_required)); valid = false; }
         if (isEmpty(editAbertura)) { tilAbertura.setError(getString(R.string.error_required)); valid = false; }
         if (isEmpty(editFechamento)) { tilFechamento.setError(getString(R.string.error_required)); valid = false; }
 
-        // Valida se a hora de abertura é antes da hora de fechamento
         if (!isEmpty(editAbertura) && !isEmpty(editFechamento)) {
-            if (editAbertura.getText().toString().compareTo(editFechamento.getText().toString()) >= 0) {
+            if (getValue(editAbertura).compareTo(getValue(editFechamento)) >= 0) {
                 tilAbertura.setError(getString(R.string.error_opening_time));
                 tilFechamento.setError(getString(R.string.error_closing_time));
                 valid = false;
             }
         }
 
-        // Validação de e-mail, CNPJ (14 dígitos) e CEP (8 dígitos)
-        String email = editEmail.getText().toString().trim();
+        String email = getValue(editEmail);
         if (TextUtils.isEmpty(email)) { tilEmail.setError(getString(R.string.error_required)); valid = false;
         } else if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) { tilEmail.setError(getString(R.string.error_invalid_email)); valid = false; }
 
-        if (editCNPJ.getText().length() != 14) { tilCNPJ.setError(getString(R.string.error_invalid_cnpj)); valid = false; }
-        if (editCEP.getText().length() != 8) { tilCEP.setError(getString(R.string.error_invalid_cep)); valid = false; }
+        String idFiscal = removeMask(getValue(editCNPJ));
+        if (idFiscal.length() != 11 && idFiscal.length() != 14) {
+            tilCNPJ.setError("CPF (11) ou CNPJ (14) inválido");
+            valid = false;
+        }
+        if (getValue(editCEP).length() != 8) { tilCEP.setError(getString(R.string.error_invalid_cep)); valid = false; }
 
-        // Validação de senha
-        String s = editSenha.getText().toString(), c = editConfirmarSenha.getText().toString();
+        String s = getValue(editSenha);
+        String c = getValue(editConfirmarSenha);
         if (s.isEmpty()) { tilSenha.setError(getString(R.string.error_required)); valid = false; }
+        else if (s.length() < 6) { tilSenha.setError("Mínimo 6 caracteres"); valid = false; }
+        
         if (c.isEmpty()) { tilConfirmarSenha.setError(getString(R.string.error_required)); valid = false; }
         else if (!s.equals(c)) { tilSenha.setError(getString(R.string.error_password_mismatch)); tilConfirmarSenha.setError(getString(R.string.error_password_mismatch)); valid = false; }
 
         return valid;
     }
 
-    // Limpa todas as mensagens de erro visuais
     private void resetErrors() {
-        TextInputLayout[] layouts = {tilNomeFantasia, tilRazaoSocial, tilCNPJ, tilCategoria, 
+        TextInputLayout[] layouts = {tilNomeFantasia, tilRazaoSocial, tilCNPJ, tilNascimento, tilCategoria,
                 tilDescricao, tilEmail, tilWhatsapp, tilCEP, tilLogradouro, tilNumero, tilBairro, 
                 tilCidade, tilEstado, tilDias, tilAbertura, tilFechamento, tilSenha, tilConfirmarSenha};
-        for (TextInputLayout l : layouts) l.setError(null);
+        for (TextInputLayout l : layouts) if (l != null) l.setError(null);
     }
 
-    // Verifica se um campo está vazio
     private boolean isEmpty(View v) {
-        if (v instanceof EditText) return TextUtils.isEmpty(((EditText) v).getText());
+        if (v instanceof EditText) {
+            CharSequence text = ((EditText) v).getText();
+            return text == null || TextUtils.isEmpty(text.toString().trim());
+        }
         return true;
     }
 }
