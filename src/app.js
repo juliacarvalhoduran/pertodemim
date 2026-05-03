@@ -3,6 +3,7 @@ import cors from 'cors';
 import usuariosRoutes from './routes/usuarios.js';
 import authRoutes from './routes/auth.js';
 import fornecedoresRoutes from './routes/fornecedores.js';
+import servicosRoutes from './routes/servicos.js';
 
 
 const app = express();
@@ -12,6 +13,7 @@ app.use(express.json());
 app.use('/usuarios', usuariosRoutes);
 app.use('/auth', authRoutes);
 app.use('/fornecedores', fornecedoresRoutes);
+app.use('/servicos', servicosRoutes);
 
 app.get('/', (req, res) => {
   res.send('API rodando');
