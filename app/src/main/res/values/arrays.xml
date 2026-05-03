@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <array name="initial_price_values">
+        <item>0.0</item>
+        <item>10000.0</item>
+    </array>
+    <array name="initial_distance_values">
+        <item>0.0</item>
+        <item>5.0</item>
+    </array>
+</resources>
