@@ -83,6 +83,38 @@ function validarCEP(cep) {
   return cep.replace(/\D/g, '').length === 8;
 }
 
+// Valida data de nascimento com idade minima por tipo
+// cliente: minimo 16 anos
+// fornecedor: minimo 18 anos
+function validarDataNascimento(data, tipo) {
+  const regex = /^\d{4}-\d{2}-\d{2}$/;
+  if (!regex.test(data)) return { valido: false, mensagem: 'Data de nascimento invalida. Use o formato YYYY-MM-DD.' };
+
+  const dataObj = new Date(data);
+  if (isNaN(dataObj.getTime())) return { valido: false, mensagem: 'Data de nascimento invalida.' };
+
+  // Nao pode ser data futura
+  if (dataObj > new Date()) return { valido: false, mensagem: 'Data de nascimento nao pode ser uma data futura.' };
+
+  const hoje = new Date();
+
+  // Idade minima conforme tipo
+  const idadeMinima = tipo === 'fornecedor' ? 18 : 16;
+  const limiteIdadeMinima = new Date(hoje.getFullYear() - idadeMinima, hoje.getMonth(), hoje.getDate());
+  if (dataObj > limiteIdadeMinima) {
+    return {
+      valido: false,
+      mensagem: `${tipo === 'fornecedor' ? 'Fornecedor' : 'Cliente'} deve ter no minimo ${idadeMinima} anos.`
+    };
+  }
+
+  // Idade maxima de 120 anos
+  const limiteIdadeMaxima = new Date(hoje.getFullYear() - 120, hoje.getMonth(), hoje.getDate());
+  if (dataObj < limiteIdadeMaxima) return { valido: false, mensagem: 'Data de nascimento invalida.' };
+
+  return { valido: true };
+}
+
 // =========================================
 // CRIAR USUARIO
 // =========================================
@@ -91,6 +123,7 @@ export const criarUsuario = async (req, res) => {
     const {
       nome, email, senha, tipo, telefone, cpf_cnpj,
       logradouro, cep, numero, bairro, complemento, cidade, estado,
+      data_nascimento,
     } = req.body;
 
     const erros = [];
@@ -127,6 +160,16 @@ export const criarUsuario = async (req, res) => {
       erros.push('CPF (11 digitos) ou CNPJ (14 digitos) invalido.');
     }
 
+    // Valida data de nascimento — regra depende do tipo
+    if (!data_nascimento) {
+      erros.push('Data de nascimento e obrigatoria.');
+    } else if (tipo && ['cliente', 'fornecedor'].includes(tipo)) {
+      const resultadoData = validarDataNascimento(data_nascimento, tipo);
+      if (!resultadoData.valido) {
+        erros.push(resultadoData.mensagem);
+      }
+    }
+
     if (!logradouro || logradouro.trim().length === 0) {
       erros.push('Logradouro e obrigatorio.');
     } else if (logradouro.trim().length > 50) {
@@ -159,22 +202,21 @@ export const criarUsuario = async (req, res) => {
       return res.status(400).json({ erros });
     }
 
-    // Gera o hash da senha antes de salvar
-    // O numero 10 e o "custo" do hash — quanto maior, mais seguro e mais lento
     const senhaHash = await bcrypt.hash(senha, 10);
 
     const result = await pool.query(
       `INSERT INTO usuarios
         (nome, email, senha, telefone, cpf_cnpj, tipo,
-         logradouro, cep, numero, bairro, complemento, cidade, estado)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
+         logradouro, cep, numero, bairro, complemento, cidade, estado,
+         data_nascimento)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
        RETURNING id, nome, email, telefone, cpf_cnpj, tipo,
                  logradouro, cep, numero, bairro, complemento, cidade, estado,
-                 created_at`,
+                 data_nascimento, created_at`,
       [
         nome.trim(),
         email.toLowerCase().trim(),
-        senhaHash,                       // salva o hash, nao a senha original
+        senhaHash,
         telefone.replace(/\D/g, ''),
         cpf_cnpj.replace(/\D/g, ''),
         tipo,
@@ -185,6 +227,7 @@ export const criarUsuario = async (req, res) => {
         complemento ? complemento.trim() : null,
         cidade.trim(),
         estado.trim().toUpperCase(),
+        data_nascimento,
       ]
     );
 
@@ -193,8 +236,11 @@ export const criarUsuario = async (req, res) => {
       usuario: result.rows[0],
     });
 
-  } catch (error) {
+ } catch (error) {
     if (error.code === '23505') {
+      if (error.constraint === 'usuarios_cpf_cnpj_unique') {
+        return res.status(409).json({ erro: 'CPF ou CNPJ ja cadastrado.' });
+      }
       return res.status(409).json({ erro: 'E-mail ja cadastrado.' });
     }
     console.error('Erro ao criar usuario:', error);
@@ -210,7 +256,7 @@ export const listarUsuarios = async (req, res) => {
     const result = await pool.query(
       `SELECT id, nome, email, telefone, cpf_cnpj, tipo,
               logradouro, cep, numero, bairro, complemento, cidade, estado,
-              created_at
+              data_nascimento, created_at
        FROM usuarios ORDER BY id`
     );
     return res.json(result.rows);
@@ -229,7 +275,7 @@ export const buscarUsuarioPorId = async (req, res) => {
     const result = await pool.query(
       `SELECT id, nome, email, telefone, cpf_cnpj, tipo,
               logradouro, cep, numero, bairro, complemento, cidade, estado,
-              created_at
+              data_nascimento, created_at
        FROM usuarios WHERE id = $1`,
       [id]
     );
