@@ -84,19 +84,24 @@
 
                     <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/dados_empresa" android:textColor="@color/verde_petroleo_profundo" android:textSize="18sp" android:textStyle="bold" android:layout_marginBottom="16dp"/>
 
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/nome_fantasia_obrig" android:textColor="@color/verde_petroleo_profundo" android:textStyle="bold"/>
-                    <com.google.android.material.textfield.TextInputLayout android:id="@+id/tilNomeFantasia" style="@style/Widget.Material3.TextInputLayout.OutlinedBox" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="12dp" app:boxCornerRadiusTopStart="12dp" app:boxCornerRadiusTopEnd="12dp" app:boxCornerRadiusBottomStart="12dp" app:boxCornerRadiusBottomEnd="12dp" app:hintEnabled="false" app:errorEnabled="true">
-                        <com.google.android.material.textfield.TextInputEditText android:id="@+id/editNomeFantasia" android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="text"/>
-                    </com.google.android.material.textfield.TextInputLayout>
-
                     <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/razao_social_obrig" android:textColor="@color/verde_petroleo_profundo" android:textStyle="bold"/>
                     <com.google.android.material.textfield.TextInputLayout android:id="@+id/tilRazaoSocial" style="@style/Widget.Material3.TextInputLayout.OutlinedBox" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="12dp" app:boxCornerRadiusTopStart="12dp" app:boxCornerRadiusTopEnd="12dp" app:boxCornerRadiusBottomStart="12dp" app:boxCornerRadiusBottomEnd="12dp" app:hintEnabled="false" app:errorEnabled="true">
                         <com.google.android.material.textfield.TextInputEditText android:id="@+id/editRazaoSocial" android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="text"/>
                     </com.google.android.material.textfield.TextInputLayout>
 
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/nome_fantasia" android:textColor="@color/verde_petroleo_profundo" android:textStyle="bold"/>
+                    <com.google.android.material.textfield.TextInputLayout android:id="@+id/tilNomeFantasia" style="@style/Widget.Material3.TextInputLayout.OutlinedBox" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="12dp" app:boxCornerRadiusTopStart="12dp" app:boxCornerRadiusTopEnd="12dp" app:boxCornerRadiusBottomStart="12dp" app:boxCornerRadiusBottomEnd="12dp" app:hintEnabled="false" app:errorEnabled="true">
+                        <com.google.android.material.textfield.TextInputEditText android:id="@+id/editNomeFantasia" android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="text"/>
+                    </com.google.android.material.textfield.TextInputLayout>
+
                     <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/cnpj_obrig" android:textColor="@color/verde_petroleo_profundo" android:textStyle="bold"/>
                     <com.google.android.material.textfield.TextInputLayout android:id="@+id/tilCNPJ" style="@style/Widget.Material3.TextInputLayout.OutlinedBox" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="12dp" app:boxCornerRadiusTopStart="12dp" app:boxCornerRadiusTopEnd="12dp" app:boxCornerRadiusBottomStart="12dp" app:boxCornerRadiusBottomEnd="12dp" app:hintEnabled="false" app:errorEnabled="true">
                         <com.google.android.material.textfield.TextInputEditText android:id="@+id/editCNPJ" android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="number" android:maxLength="14"/>
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/data_nascimento_obrig" android:textColor="@color/verde_petroleo_profundo" android:textStyle="bold"/>
+                    <com.google.android.material.textfield.TextInputLayout android:id="@+id/tilNascimento" style="@style/Widget.Material3.TextInputLayout.OutlinedBox" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="12dp" app:boxCornerRadiusTopStart="12dp" app:boxCornerRadiusTopEnd="12dp" app:boxCornerRadiusBottomStart="12dp" app:boxCornerRadiusBottomEnd="12dp" app:hintEnabled="false" app:errorEnabled="true">
+                        <com.google.android.material.textfield.TextInputEditText android:id="@+id/editNascimento" android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="date" android:hint="YYYY-MM-DD"/>
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/categoria_obrig" android:textColor="@color/verde_petroleo_profundo" android:textStyle="bold"/>
@@ -286,17 +291,30 @@
             </androidx.cardview.widget.CardView>
 
             <!-- Botão no final do scroll -->
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnRegister"
+            <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
-                android:layout_marginBottom="16dp"
-                android:backgroundTint="@color/terracota"
-                android:text="@string/cadastrar"
-                android:textAllCaps="false"
-                android:textColor="@color/white"
-                android:textSize="16sp"
-                app:cornerRadius="12dp" />
+                android:layout_marginBottom="16dp">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnRegister"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:backgroundTint="@color/terracota"
+                    android:text="@string/cadastrar"
+                    android:textAllCaps="false"
+                    android:textColor="@color/white"
+                    android:textSize="16sp"
+                    app:cornerRadius="12dp" />
+
+                <ProgressBar
+                    android:id="@+id/pbRegister"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_gravity="center"
+                    android:indeterminateTint="@color/white"
+                    android:visibility="gone" />
+            </FrameLayout>
 
         </LinearLayout>
     </ScrollView>

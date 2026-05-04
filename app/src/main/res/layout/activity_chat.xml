@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/off_white"
+    android:background="@color/white"
     tools:context=".ChatActivity">
 
     <!-- Header -->
@@ -13,7 +13,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/verde_petroleo_profundo"
-        android:padding="16dp"
+        android:padding="20dp"
         app:layout_constraintTop_toTopOf="parent">
 
         <TextView
@@ -22,7 +22,7 @@
             android:layout_height="wrap_content"
             android:text="@string/mensagens"
             android:textColor="@color/white"
-            android:textSize="24sp"
+            android:textSize="22sp"
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
@@ -30,9 +30,9 @@
         <androidx.cardview.widget.CardView
             android:id="@+id/searchCardChat"
             android:layout_width="match_parent"
-            android:layout_height="45dp"
+            android:layout_height="48dp"
             android:layout_marginTop="16dp"
-            app:cardCornerRadius="22dp"
+            app:cardCornerRadius="24dp"
             app:cardElevation="0dp"
             app:cardBackgroundColor="@color/white"
             app:layout_constraintTop_toBottomOf="@id/tvMensagens">
@@ -49,7 +49,7 @@
                     android:layout_height="20dp"
                     android:src="@drawable/ic_search"
                     app:tint="@color/text_gray"
-                    android:contentDescription="@string/buscar_conversas" />
+                    android:contentDescription="@null" />
 
                 <EditText
                     android:layout_width="match_parent"
@@ -58,20 +58,339 @@
                     android:background="@android:color/transparent"
                     android:hint="@string/buscar_conversas"
                     android:inputType="text"
-                    android:autofillHints="name"
                     android:textSize="14sp" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
-
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <!-- Chat List Placeholder -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rvChats"
+    <!-- Chat List -->
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
         app:layout_constraintBottom_toTopOf="@+id/bottomNavigationChat"
-        app:layout_constraintTop_toBottomOf="@id/chatHeader" />
+        app:layout_constraintTop_toBottomOf="@id/chatHeader">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- Chat Item 1 -->
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/chatItem1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="16dp"
+                android:background="?attr/selectableItemBackground">
+
+                <FrameLayout
+                    android:id="@+id/avatar1"
+                    android:layout_width="56dp"
+                    android:layout_height="56dp"
+                    android:background="@drawable/circle_orange"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:text="SB"
+                        android:textColor="@color/white"
+                        android:textStyle="bold" />
+
+                    <View
+                        android:layout_width="14dp"
+                        android:layout_height="14dp"
+                        android:layout_gravity="bottom|end"
+                        android:background="@drawable/circle_green" />
+                </FrameLayout>
+
+                <TextView
+                    android:id="@+id/tvName1"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:text="Salão Bela Forma"
+                    android:textColor="@color/verde_petroleo_profundo"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    app:layout_constraintEnd_toStartOf="@+id/tvTime1"
+                    app:layout_constraintStart_toEndOf="@id/avatar1"
+                    app:layout_constraintTop_toTopOf="@id/avatar1" />
+
+                <TextView
+                    android:id="@+id/tvMsg1"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="Obrigada! Até amanhã às 14h!"
+                    android:textColor="@color/text_gray"
+                    android:textSize="14sp"
+                    android:maxLines="1"
+                    android:ellipsize="end"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="@id/tvName1"
+                    app:layout_constraintTop_toBottomOf="@id/tvName1" />
+
+                <TextView
+                    android:id="@+id/tvTime1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="15:30"
+                    android:textColor="@color/text_gray"
+                    android:textSize="12sp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="@id/tvName1" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="#EEEEEE"
+                    android:layout_marginTop="16dp"
+                    app:layout_constraintTop_toBottomOf="@id/avatar1" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <!-- Chat Item 2 -->
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/chatItem2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="16dp"
+                android:background="?attr/selectableItemBackground">
+
+                <FrameLayout
+                    android:id="@+id/avatar2"
+                    android:layout_width="56dp"
+                    android:layout_height="56dp"
+                    android:background="@drawable/circle_orange"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:text="TC"
+                        android:textColor="@color/white"
+                        android:textStyle="bold" />
+                </FrameLayout>
+
+                <TextView
+                    android:id="@+id/tvName2"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:text="TechFix Consertos"
+                    android:textColor="@color/verde_petroleo_profundo"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    app:layout_constraintEnd_toStartOf="@+id/tvTime2"
+                    app:layout_constraintStart_toEndOf="@id/avatar2"
+                    app:layout_constraintTop_toTopOf="@id/avatar2" />
+
+                <TextView
+                    android:id="@+id/tvMsg2"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="Seu notebook está pronto para retirar..."
+                    android:textColor="@color/text_gray"
+                    android:textSize="14sp"
+                    android:maxLines="1"
+                    android:ellipsize="end"
+                    app:layout_constraintEnd_toStartOf="@+id/badge2"
+                    app:layout_constraintStart_toStartOf="@id/tvName2"
+                    app:layout_constraintTop_toBottomOf="@id/tvName2" />
+
+                <TextView
+                    android:id="@+id/tvTime2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="14:20"
+                    android:textColor="@color/text_gray"
+                    android:textSize="12sp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="@id/tvName2" />
+
+                <TextView
+                    android:id="@+id/badge2"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:background="@drawable/circle_orange_notification"
+                    android:text="2"
+                    android:textColor="@color/white"
+                    android:textSize="10sp"
+                    android:gravity="center"
+                    app:layout_constraintBottom_toBottomOf="@id/tvMsg2"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="@id/tvMsg2" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="#EEEEEE"
+                    android:layout_marginTop="16dp"
+                    app:layout_constraintTop_toBottomOf="@id/avatar2" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <!-- Chat Item 3 -->
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/chatItem3"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="16dp"
+                android:background="?attr/selectableItemBackground">
+
+                <FrameLayout
+                    android:id="@+id/avatar3"
+                    android:layout_width="56dp"
+                    android:layout_height="56dp"
+                    android:background="@drawable/circle_orange"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:text="PN"
+                        android:textColor="@color/white"
+                        android:textStyle="bold" />
+
+                    <View
+                        android:layout_width="14dp"
+                        android:layout_height="14dp"
+                        android:layout_gravity="bottom|end"
+                        android:background="@drawable/circle_green" />
+                </FrameLayout>
+
+                <TextView
+                    android:id="@+id/tvName3"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:text="Pizzaria Napolitana"
+                    android:textColor="@color/verde_petroleo_profundo"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    app:layout_constraintEnd_toStartOf="@+id/tvTime3"
+                    app:layout_constraintStart_toEndOf="@id/avatar3"
+                    app:layout_constraintTop_toTopOf="@id/avatar3" />
+
+                <TextView
+                    android:id="@+id/tvMsg3"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="Pedido confirmado! Tempo estimado: 30 ..."
+                    android:textColor="@color/text_gray"
+                    android:textSize="14sp"
+                    android:maxLines="1"
+                    android:ellipsize="end"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="@id/tvName3"
+                    app:layout_constraintTop_toBottomOf="@id/tvName3" />
+
+                <TextView
+                    android:id="@+id/tvTime3"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="12:45"
+                    android:textColor="@color/text_gray"
+                    android:textSize="12sp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="@id/tvName3" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="#EEEEEE"
+                    android:layout_marginTop="16dp"
+                    app:layout_constraintTop_toBottomOf="@id/avatar3" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <!-- Chat Item 4 -->
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/chatItem4"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="16dp"
+                android:background="?attr/selectableItemBackground">
+
+                <FrameLayout
+                    android:id="@+id/avatar4"
+                    android:layout_width="56dp"
+                    android:layout_height="56dp"
+                    android:background="@drawable/circle_orange"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:text="AF"
+                        android:textColor="@color/white"
+                        android:textStyle="bold" />
+                </FrameLayout>
+
+                <TextView
+                    android:id="@+id/tvName4"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:text="Academia FitLife"
+                    android:textColor="@color/verde_petroleo_profundo"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    app:layout_constraintEnd_toStartOf="@+id/tvTime4"
+                    app:layout_constraintStart_toEndOf="@id/avatar4"
+                    app:layout_constraintTop_toTopOf="@id/avatar4" />
+
+                <TextView
+                    android:id="@+id/tvMsg4"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="Temos uma promoção especial este..."
+                    android:textColor="@color/text_gray"
+                    android:textSize="14sp"
+                    android:maxLines="1"
+                    android:ellipsize="end"
+                    app:layout_constraintEnd_toStartOf="@+id/badge4"
+                    app:layout_constraintStart_toStartOf="@id/tvName4"
+                    app:layout_constraintTop_toBottomOf="@id/tvName4" />
+
+                <TextView
+                    android:id="@+id/tvTime4"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Ontem"
+                    android:textColor="@color/text_gray"
+                    android:textSize="12sp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="@id/tvName4" />
+
+                <TextView
+                    android:id="@+id/badge4"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:background="@drawable/circle_orange_notification"
+                    android:text="1"
+                    android:textColor="@color/white"
+                    android:textSize="10sp"
+                    android:gravity="center"
+                    app:layout_constraintBottom_toBottomOf="@id/tvMsg4"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="@id/tvMsg4" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="#EEEEEE"
+                    android:layout_marginTop="16dp"
+                    app:layout_constraintTop_toBottomOf="@id/avatar4" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
 
     <!-- Bottom Navigation -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
@@ -79,6 +398,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/white"
+        app:backgroundTint="@color/white"
+        app:elevation="0dp"
         app:itemIconTint="@color/bottom_nav_color"
         app:itemTextColor="@color/bottom_nav_color"
         app:itemActiveIndicatorStyle="@null"
