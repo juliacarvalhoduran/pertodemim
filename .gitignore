@@ -9,5 +9,6 @@ local.properties
 .cxx
 .env
 .env.*
+!.env.example
 node_modules/
 Thumbs.db
