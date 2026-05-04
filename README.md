@@ -63,6 +63,7 @@ backend-app/
 │   │   ├── usuariosController.js
 │   │   ├── fornecedoresController.js
 │   │   ├── servicosController.js
+│   │   ├── pedidosController.js
 │   │   └── authController.js
 │   ├── middlewares/
 │   │   └── authMiddleware.js
@@ -70,10 +71,11 @@ backend-app/
 │   │   ├── usuarios.js
 │   │   ├── fornecedores.js
 │   │   ├── servicos.js
+│   │   ├── pedidos.js
 │   │   └── auth.js
 │   └── app.js
-├── .env                  # NAO sobe no Git, aqui ficam suas senhas
-├── .env.example          # Modelo sem valores reais
+├── .env                  # NAO sobe no Git
+├── .env.example
 ├── .gitignore
 └── package.json
 ```
@@ -136,49 +138,18 @@ O token e obtido no login e expira em 7 dias.
 | estado | Obrigatorio, sigla ex: `"CE"` |
 | complemento | Opcional |
 
-> Enviar telefone, cpf_cnpj e cep **sem mascara** — so os digitos.
-> Data de nascimento no formato `YYYY-MM-DD`.
-
-**Respostas:**
-
-`201` — usuario criado:
-```json
-{
-  "mensagem": "Usuario criado com sucesso!",
-  "usuario": {
-    "id": 1,
-    "nome": "Julia",
-    "email": "julia@email.com",
-    "telefone": "85999999999",
-    "cpf_cnpj": "52998224725",
-    "tipo": "cliente",
-    "data_nascimento": "1999-05-15",
-    "created_at": "2026-05-03T14:02:10.651Z"
-  }
-}
-```
-
-`400` — erro de validacao | `409` — duplicidade
+`201` — usuario criado | `400` — erro de validacao | `409` — duplicidade
 
 ---
 
-#### GET `/usuarios` — Listar todos os usuarios
-
-Sem body. Retorna array com todos os usuarios.
-
----
-
-#### GET `/usuarios/:id` — Buscar usuario por ID
-
-`404` se nao encontrado.
+#### GET `/usuarios` — Listar todos
+#### GET `/usuarios/:id` — Buscar por ID
 
 ---
 
 ### 2. Fornecedores
 
 #### POST `/fornecedores` — Cadastrar fornecedor
-
-Salva dados pessoais em `usuarios` e dados da loja em `fornecedores` numa unica requisicao usando transacao.
 
 **Body:**
 ```json
@@ -208,51 +179,19 @@ Salva dados pessoais em `usuarios` e dados da loja em `fornecedores` numa unica 
 **Categorias validas:**
 `Beleza e Estetica` | `Saude` | `Alimentacao` | `Manutencao` | `Tecnologia` | `Outros`
 
-**Respostas:**
-
-`201` — fornecedor cadastrado:
-```json
-{
-  "mensagem": "Fornecedor cadastrado com sucesso!",
-  "usuario": { ... },
-  "loja": {
-    "id": 4,
-    "usuario_id": 10,
-    "nome_loja": "Studio Marina",
-    "nome_responsavel": "Marina Silva",
-    "categoria": "Beleza e Estetica",
-    "categoria_outro": null,
-    "descricao": "Especialista em cabelo e maquiagem",
-    "preco_medio": "80"
-  }
-}
-```
-
-`400` — erro de validacao | `409` — duplicidade
+`201` — fornecedor cadastrado | `400` — erro de validacao | `409` — duplicidade
 
 ---
 
-#### GET `/fornecedores` — Listar todos os fornecedores
-
-Sem body. Retorna dados pessoais e da loja unidos.
-
----
-
-#### GET `/fornecedores/:id` — Buscar fornecedor por ID
-
-`404` se nao encontrado.
+#### GET `/fornecedores` — Listar todos
+#### GET `/fornecedores/:id` — Buscar por ID
 
 ---
 
 ### 3. Servicos
 
 #### POST `/servicos` — Cadastrar servico
-**Rota protegida — exige token JWT de fornecedor**
-
-**Headers:**
-```
-Authorization: Bearer <token>
-```
+**Rota protegida — token de fornecedor**
 
 **Body:**
 ```json
@@ -274,88 +213,116 @@ Authorization: Bearer <token>
 | 5 | Tecnologia |
 | 6 | Outros |
 
+`201` — servico cadastrado | `400` — erro de validacao | `403` — usuario nao e fornecedor
+
+---
+
+#### GET `/servicos` — Listar todos (publico)
+#### GET `/servicos/:id` — Buscar por ID (publico)
+#### GET `/servicos/fornecedor/:id` — Listar servicos de um fornecedor (publico)
+
+---
+
+### 4. Pedidos
+
+#### POST `/pedidos` — Criar pedido
+**Rota protegida — token de cliente**
+
+Ao criar o pedido, o valor e copiado automaticamente do servico e o status inicia como `pendente`.
+
+**Body:**
+```json
+{
+  "servico_id": 1
+}
+```
+
+**Resposta `201`:**
+```json
+{
+  "mensagem": "Pedido criado com sucesso!",
+  "pedido": {
+    "id": 1,
+    "cliente_id": 1,
+    "servico_id": 1,
+    "status": "pendente",
+    "valor": "80",
+    "data": "2026-05-04T17:41:12.720Z"
+  }
+}
+```
+
+`403` — usuario nao e cliente:
+```json
+{
+  "erro": "Apenas clientes podem criar pedidos."
+}
+```
+
+---
+
+#### GET `/pedidos/meus` — Listar pedidos do usuario logado
+**Rota protegida**
+
+- Cliente ve seus proprios pedidos com dados do servico e da loja
+- Fornecedor ve pedidos dos seus servicos com dados do cliente
+
+---
+
+#### GET `/pedidos/:id` — Buscar pedido por ID
+**Rota protegida**
+
+---
+
+#### PATCH `/pedidos/:id/status` — Atualizar status do pedido
+**Rota protegida**
+
+**Body:**
+```json
+{
+  "status": "aceito"
+}
+```
+
+**Regras de status por tipo de usuario:**
+| Tipo | Status permitidos |
+|---|---|
+| fornecedor | `aceito`, `recusado`, `concluido` |
+| cliente | `cancelado` |
+
+> Pedidos com status `concluido`, `cancelado` ou `recusado` nao podem ser alterados.
+
 **Respostas:**
 
-`201` — servico cadastrado:
+`200` — status atualizado:
 ```json
 {
-  "mensagem": "Servico cadastrado com sucesso!",
-  "servico": {
+  "mensagem": "Status atualizado com sucesso!",
+  "pedido": {
     "id": 1,
-    "fornecedor_id": 1,
-    "categoria_id": 1,
-    "nome": "Corte de cabelo",
-    "descricao": "Corte feminino com lavagem e escova",
-    "preco": "80",
-    "created_at": "2026-05-03T22:18:08.249Z"
+    "status": "aceito",
+    ...
   }
 }
 ```
 
-`400` — erro de validacao:
+`400` — status invalido para o tipo de usuario:
 ```json
 {
-  "erros": ["Nome do servico e obrigatorio."]
+  "erro": "Cliente so pode cancelar o pedido."
 }
 ```
 
-`403` — usuario nao e fornecedor:
+`403` — pedido nao pertence ao usuario:
 ```json
 {
-  "erro": "Apenas fornecedores podem cadastrar servicos."
-}
-```
-
-`401` — token ausente ou invalido:
-```json
-{
-  "erro": "Token nao fornecido."
+  "erro": "Voce nao tem permissao para alterar este pedido."
 }
 ```
 
 ---
 
-#### GET `/servicos` — Listar todos os servicos
-**Rota publica — sem token**
-
-Retorna lista com dados do servico, categoria, loja e fornecedor.
-
-**Resposta `200`:**
-```json
-[
-  {
-    "id": 1,
-    "nome": "Corte de cabelo",
-    "descricao": "Corte feminino com lavagem e escova",
-    "preco": "80",
-    "categoria": "Beleza e Estetica",
-    "nome_loja": "Studio Marina",
-    "nome_fornecedor": "Marina Silva",
-    "cidade": "Fortaleza",
-    "estado": "CE"
-  }
-]
-```
-
----
-
-#### GET `/servicos/:id` — Buscar servico por ID
-**Rota publica — sem token**
-
-Retorna detalhes completos do servico incluindo dados da loja.
-
----
-
-#### GET `/servicos/fornecedor/:id` — Listar servicos de um fornecedor
-**Rota publica — sem token**
-
-Substituir `:id` pelo `usuario_id` do fornecedor.
-
-Exemplo: `GET http://localhost:3000/servicos/fornecedor/5`
-
----
-
-### 4. Autenticacao
+### 5. Autenticacao
 
 #### POST `/auth/login` — Login
 
@@ -395,50 +362,39 @@ Exemplo: `GET http://localhost:3000/servicos/fornecedor/5`
 6. **Idade minima:** cliente 16 anos, fornecedor 18 anos.
 7. **Categoria Outros:** quando o usuario selecionar "Outros", exibir campo de texto e enviar `categoria_outro`.
 8. **Servicos:** para cadastrar servico, enviar token no header. Para listar ou buscar, nao precisa de token.
-9. **categoria_id dos servicos:** usar os IDs fixos da tabela de categorias (1 a 6).
+9. **Pedidos:** o valor e copiado automaticamente do servico — nao precisa enviar no body.
+10. **Status do pedido:** fornecedor pode aceitar, recusar ou concluir. Cliente so pode cancelar.
+11. **Emulador Android:** usar `http://10.0.2.2:3000` em vez de `http://localhost:3000`.
 
 ---
 
 ## Exemplo em JavaScript
 
 ```javascript
-// Cadastro de cliente
-const response = await fetch('http://localhost:3000/usuarios', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ ...dadosDoFormulario }),
-});
-
-// Cadastro de fornecedor
-const responseForn = await fetch('http://localhost:3000/fornecedores', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ ...dadosPessoais, ...dadosDaLoja }),
-});
-
-// Login
-const responseLogin = await fetch('http://localhost:3000/auth/login', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ email, senha }),
-});
-const { token, usuario } = await responseLogin.json();
-
-// Cadastrar servico (protegido)
-const responseServico = await fetch('http://localhost:3000/servicos', {
+// Criar pedido (cliente logado)
+const responsePedido = await fetch('http://localhost:3000/pedidos', {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
     'Authorization': `Bearer ${token}`,
   },
-  body: JSON.stringify({
-    nome: 'Corte de cabelo',
-    descricao: 'Corte feminino com lavagem e escova',
-    preco: 80,
-    categoria_id: 1,
-  }),
+  body: JSON.stringify({ servico_id: 1 }),
 });
 
-// Listar servicos (publico)
-const responseListar = await fetch('http://localhost:3000/servicos');
-const servicos = await responseListar.json();
+// Atualizar status (fornecedor logado)
+const responseStatus = await fetch('http://localhost:3000/pedidos/1/status', {
+  method: 'PATCH',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${token}`,
+  },
+  body: JSON.stringify({ status: 'aceito' }),
+});
+
+// Listar meus pedidos
+const responseMeus = await fetch('http://localhost:3000/pedidos/meus', {
+  headers: {
+    'Authorization': `Bearer ${token}`,
+  },
+});
+```
