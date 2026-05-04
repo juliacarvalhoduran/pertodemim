@@ -1,16 +1,38 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
     <style name="Base.Theme.PertoDeMim" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
+        <!-- Cores Principais -->
         <item name="colorPrimary">@color/verde_petroleo_profundo</item>
-        <item name="colorSecondary">@color/terracota</item>
-        <item name="android:statusBarColor">@color/verde_petroleo_profundo</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorPrimaryContainer">#E0ECEB</item>
+        <item name="colorOnPrimaryContainer">@color/verde_petroleo_profundo</item>
 
-        <!-- Remover o fundo lilás/roxo do Material 3 -->
-        <item name="colorSurface">@color/white</item>
-        <item name="colorSurfaceContainer">@color/white</item>
-        <item name="colorSecondaryContainer">@android:color/transparent</item>
+        <item name="colorSecondary">@color/terracota</item>
+        <item name="colorOnSecondary">@color/white</item>
+        <item name="colorSecondaryContainer">#F8EBE8</item>
         <item name="colorOnSecondaryContainer">@color/terracota</item>
+
+        <item name="colorTertiary">@color/avatar_tan</item>
+        <item name="colorOnTertiary">@color/verde_petroleo_profundo</item>
+        <item name="colorTertiaryContainer">#FDF6EF</item>
+        <item name="colorOnTertiaryContainer">@color/verde_petroleo_profundo</item>
+
+        <!-- Cores de Fundo e Superfície -->
+        <item name="android:windowBackground">@color/off_white</item>
+        <item name="colorSurface">@color/white</item>
+        <item name="colorOnSurface">@color/black</item>
+        <item name="colorSurfaceVariant">@color/off_white</item>
+        <item name="colorOnSurfaceVariant">@color/text_gray</item>
+
+        <item name="android:statusBarColor">@color/verde_petroleo_profundo</item>
+        <item name="colorOutline">#DDDDDD</item>
+        <item name="colorOutlineVariant">#EEEEEE</item>
+
+        <!-- Customização específica para Switches e Componentes de Seleção -->
+        <!-- Garante que o Verde Petróleo seja usado em vez do roxo padrão -->
+        <item name="colorControlActivated">@color/verde_petroleo_profundo</item>
+        <item name="colorControlHighlight">#20235E5C</item>
+        <item name="colorAccent">@color/verde_petroleo_profundo</item>
     </style>
 
     <style name="Theme.PertoDeMim" parent="Base.Theme.PertoDeMim" />

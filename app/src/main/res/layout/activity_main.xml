@@ -131,20 +131,33 @@
         </com.google.android.material.textfield.TextInputLayout>
 
         <!-- Botão para Entrar -->
-        <Button
-            android:id="@+id/btEntrar"
+        <FrameLayout
+            android:id="@+id/btnContainer"
             android:layout_width="0dp"
             android:layout_height="56dp"
             android:layout_marginTop="16dp"
-            android:backgroundTint="@color/terracota"
-            android:text="@string/entrar"
-            android:textAllCaps="false"
-            android:textSize="16sp"
-            app:cornerRadius="12dp"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/layoutSenha" />
+            app:layout_constraintTop_toBottomOf="@+id/layoutSenha">
+
+            <Button
+                android:id="@+id/btEntrar"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:backgroundTint="@color/terracota"
+                android:text="@string/entrar"
+                android:textAllCaps="false"
+                android:textSize="16sp"
+                app:cornerRadius="12dp" />
+
+            <ProgressBar
+                android:id="@+id/loadingLogin"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_gravity="center"
+                android:indeterminateTint="@color/white"
+                android:visibility="gone" />
+        </FrameLayout>
 
         <!-- Texto para recuperar senha -->
         <TextView
@@ -157,7 +170,7 @@
             android:textColor="@color/text_gray"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/btEntrar" />
+            app:layout_constraintTop_toBottomOf="@+id/btnContainer" />
 
         <!-- Seção para criar novas contas -->
         <LinearLayout
