@@ -74,6 +74,18 @@
                     android:textColor="@color/verde_petroleo_profundo"
                     android:textSize="24sp"
                     android:textStyle="bold" />
+
+                <ImageView
+                    android:id="@+id/btnEditProfile"
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:layout_gravity="bottom|end"
+                    android:background="@drawable/circle_edit_button"
+                    android:padding="6dp"
+                    android:src="@drawable/ic_edit"
+                    android:contentDescription="@string/editar_perfil"
+                    android:clickable="true"
+                    android:focusable="true" />
             </FrameLayout>
 
             <LinearLayout

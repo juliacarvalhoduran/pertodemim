@@ -189,4 +189,9 @@
     <string name="editar_endereco_title">Editar Endereço</string>
     <string name="novo_endereco_title">Novo Endereço</string>
     <string name="seus_enderecos">Seus Endereços</string>
+    <string name="editar_perfil">Editar Perfil</string>
+    <string name="salvar_alteracoes">Salvar Alterações</string>
+    <string name="nome_completo">Nome Completo</string>
+    <string name="data_nascimento">Data de Nascimento</string>
+    <string name="cpf">CPF</string>
 </resources>
