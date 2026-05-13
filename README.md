@@ -35,13 +35,15 @@ npm install
 
 3. Crie o arquivo `.env` na raiz do projeto com as variaveis:
 ```
-DB_USER=postgres
+DB_USER=seu_usuario_postgres
 DB_HOST=localhost
 DB_NAME=perto_de_mim
 DB_PASSWORD=sua_senha
 DB_PORT=5432
 JWT_SECRET=uma_chave_secreta_longa
 ```
+
+> **Importante:** O usuario do PostgreSQL varia conforme o sistema. No Mac geralmente e o nome do usuario do sistema (ex: `juliaduran`). No Windows geralmente e `postgres`.
 
 4. Rode o servidor:
 ```bash
@@ -64,6 +66,7 @@ backend-app/
 │   │   ├── fornecedoresController.js
 │   │   ├── servicosController.js
 │   │   ├── pedidosController.js
+│   │   ├── avaliacoesController.js
 │   │   └── authController.js
 │   ├── middlewares/
 │   │   └── authMiddleware.js
@@ -72,12 +75,31 @@ backend-app/
 │   │   ├── fornecedores.js
 │   │   ├── servicos.js
 │   │   ├── pedidos.js
+│   │   ├── avaliacoes.js
 │   │   └── auth.js
 │   └── app.js
 ├── .env                  # NAO sobe no Git
 ├── .env.example
 ├── .gitignore
 └── package.json
+```
+
+---
+
+## Banco de dados — tabelas
+
+```
+usuarios
+clientes
+fornecedores
+categorias
+servicos
+pedidos
+avaliacoes
+favoritos
+pagamentos
+mensagens
+portifolio
 ```
 
 ---
@@ -228,59 +250,10 @@ O token e obtido no login e expira em 7 dias.
 #### POST `/pedidos` — Criar pedido
 **Rota protegida — token de cliente**
 
-Ao criar o pedido, o valor e copiado automaticamente do servico e o status inicia como `pendente`.
-
 **Body:**
 ```json
 {
   "servico_id": 1
-}
-```
-
-**Resposta `201`:**
-```json
-{
-  "mensagem": "Pedido criado com sucesso!",
-  "pedido": {
-    "id": 1,
-    "cliente_id": 1,
-    "servico_id": 1,
-    "status": "pendente",
-    "valor": "80",
-    "data": "2026-05-04T17:41:12.720Z"
-  }
-}
-```
-
-`403` — usuario nao e cliente:
-```json
-{
-  "erro": "Apenas clientes podem criar pedidos."
-}
-```
-
----
-
-#### GET `/pedidos/meus` — Listar pedidos do usuario logado
-**Rota protegida**
-
-- Cliente ve seus proprios pedidos com dados do servico e da loja
-- Fornecedor ve pedidos dos seus servicos com dados do cliente
-
----
-
-#### GET `/pedidos/:id` — Buscar pedido por ID
-**Rota protegida**
-
----
-
-#### PATCH `/pedidos/:id/status` — Atualizar status do pedido
-**Rota protegida**
-
-**Body:**
-```json
-{
-  "status": "aceito"
 }
 ```
 
@@ -292,37 +265,118 @@ Ao criar o pedido, o valor e copiado automaticamente do servico e o status inici
 
 > Pedidos com status `concluido`, `cancelado` ou `recusado` nao podem ser alterados.
 
-**Respostas:**
+---
 
-`200` — status atualizado:
+#### GET `/pedidos/meus` — Listar pedidos do usuario logado (protegida)
+#### GET `/pedidos/:id` — Buscar pedido por ID (protegida)
+
+---
+
+#### PATCH `/pedidos/:id/status` — Atualizar status
+**Rota protegida**
+
+**Body:**
 ```json
 {
-  "mensagem": "Status atualizado com sucesso!",
-  "pedido": {
-    "id": 1,
-    "status": "aceito",
-    ...
-  }
-}
-```
-
-`400` — status invalido para o tipo de usuario:
-```json
-{
-  "erro": "Cliente so pode cancelar o pedido."
-}
-```
-
-`403` — pedido nao pertence ao usuario:
-```json
-{
-  "erro": "Voce nao tem permissao para alterar este pedido."
+  "status": "aceito"
 }
 ```
 
 ---
 
-### 5. Autenticacao
+### 5. Avaliacoes
+
+#### POST `/avaliacoes` — Criar avaliacao
+**Rota protegida — token de cliente**
+
+Regras:
+- So pode avaliar pedidos com status `concluido`
+- 1 avaliacao por pedido
+- Nota de 1 a 5 estrelas
+- Comentario e opcional
+
+**Body:**
+```json
+{
+  "pedido_id": 1,
+  "nota": 5,
+  "comentario": "Excelente servico!"
+}
+```
+
+**Resposta `201`:**
+```json
+{
+  "mensagem": "Avaliacao registrada com sucesso!",
+  "avaliacao": {
+    "id": 1,
+    "cliente_id": 1,
+    "servico_id": 1,
+    "pedido_id": 1,
+    "nota": 5,
+    "comentario": "Excelente servico!",
+    "created_at": "2026-05-13T00:03:23.432Z"
+  }
+}
+```
+
+`400` — pedido nao concluido:
+```json
+{
+  "erro": "So e possivel avaliar pedidos com status \"concluido\"."
+}
+```
+
+`409` — pedido ja avaliado:
+```json
+{
+  "erro": "Este pedido ja foi avaliado."
+}
+```
+
+---
+
+#### GET `/avaliacoes/servico/:id` — Avaliacoes de um servico (publico)
+
+Retorna lista de avaliacoes com media de notas.
+
+**Resposta `200`:**
+```json
+{
+  "servico_id": 1,
+  "total_avaliacoes": 1,
+  "media_nota": 5,
+  "avaliacoes": [
+    {
+      "id": 1,
+      "nota": 5,
+      "comentario": "Excelente servico!",
+      "nome_cliente": "Julia Cliente",
+      "servico": "Corte de cabelo"
+    }
+  ]
+}
+```
+
+---
+
+#### GET `/avaliacoes/fornecedor/:id` — Avaliacoes de um fornecedor (publico)
+
+Retorna media geral e todas as avaliacoes do fornecedor.
+
+**Resposta `200`:**
+```json
+{
+  "fornecedor_usuario_id": 1,
+  "total_avaliacoes": 1,
+  "media_geral": 5,
+  "avaliacoes": [ ... ]
+}
+```
+
+---
+
+### 6. Autenticacao
 
 #### POST `/auth/login` — Login
 
@@ -356,45 +410,13 @@ Ao criar o pedido, o valor e copiado automaticamente do servico e o status inici
 
 1. **Mascaras:** aplicar mascara visualmente mas remover antes de enviar.
 2. **Data de nascimento:** enviar no formato `YYYY-MM-DD`.
-3. **Tipo:** usar o campo `tipo` retornado no login para redirecionar — cliente vai para tela de cliente, fornecedor para dashboard.
+3. **Tipo:** usar o campo `tipo` retornado no login para redirecionar.
 4. **Token expirado:** se a API retornar `401` em rota protegida, redirecionar para o login.
 5. **Erros:** a API retorna todos os erros de uma vez no array `erros`.
 6. **Idade minima:** cliente 16 anos, fornecedor 18 anos.
-7. **Categoria Outros:** quando o usuario selecionar "Outros", exibir campo de texto e enviar `categoria_outro`.
-8. **Servicos:** para cadastrar servico, enviar token no header. Para listar ou buscar, nao precisa de token.
-9. **Pedidos:** o valor e copiado automaticamente do servico — nao precisa enviar no body.
+7. **Categoria Outros:** exibir campo de texto e enviar `categoria_outro`.
+8. **Servicos:** para cadastrar precisa de token. Para listar nao precisa.
+9. **Pedidos:** o valor e copiado automaticamente do servico.
 10. **Status do pedido:** fornecedor pode aceitar, recusar ou concluir. Cliente so pode cancelar.
-11. **Emulador Android:** usar `http://10.0.2.2:3000` em vez de `http://localhost:3000`.
-
----
-
-## Exemplo em JavaScript
-
-```javascript
-// Criar pedido (cliente logado)
-const responsePedido = await fetch('http://localhost:3000/pedidos', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${token}`,
-  },
-  body: JSON.stringify({ servico_id: 1 }),
-});
-
-// Atualizar status (fornecedor logado)
-const responseStatus = await fetch('http://localhost:3000/pedidos/1/status', {
-  method: 'PATCH',
-  headers: {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${token}`,
-  },
-  body: JSON.stringify({ status: 'aceito' }),
-});
-
-// Listar meus pedidos
-const responseMeus = await fetch('http://localhost:3000/pedidos/meus', {
-  headers: {
-    'Authorization': `Bearer ${token}`,
-  },
-});
-```
+11. **Avaliacoes:** so apos pedido concluido. Nota de 1 a 5 — mapear estrelas para numeros.
+12. **Emulador Android:** usar `http://10.0.2.2:3000` em vez de `http://localhost:3000`.

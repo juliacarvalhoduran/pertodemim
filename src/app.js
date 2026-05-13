@@ -5,6 +5,7 @@ import authRoutes from './routes/auth.js';
 import fornecedoresRoutes from './routes/fornecedores.js';
 import servicosRoutes from './routes/servicos.js';
 import pedidosRoutes from './routes/pedidos.js';
+import avaliacoesRoutes from './routes/avaliacoes.js';
 
 
 
@@ -17,6 +18,8 @@ app.use('/auth', authRoutes);
 app.use('/fornecedores', fornecedoresRoutes);
 app.use('/servicos', servicosRoutes);
 app.use('/pedidos', pedidosRoutes);
+app.use('/avaliacoes', avaliacoesRoutes);
+
 
 app.get('/', (req, res) => {
   res.send('API rodando');
