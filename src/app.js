@@ -7,6 +7,7 @@ import servicosRoutes from './routes/servicos.js';
 import pedidosRoutes from './routes/pedidos.js';
 import avaliacoesRoutes from './routes/avaliacoes.js';
 import favoritosRoutes from './routes/favoritos.js';
+import portfolioRoutes from './routes/portfolio.js';
 
 const app = express();
 
@@ -19,6 +20,8 @@ app.use('/servicos', servicosRoutes);
 app.use('/pedidos', pedidosRoutes);
 app.use('/avaliacoes', avaliacoesRoutes);
 app.use('/favoritos', favoritosRoutes);
+app.use('/uploads', express.static('uploads')); // serve as imagens estaticamente
+app.use('/portfolio', portfolioRoutes);
 
 
 app.get('/', (req, res) => {

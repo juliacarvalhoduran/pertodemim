@@ -12,6 +12,7 @@ API REST do aplicativo Perto de Mim, desenvolvida em Node.js com Express e Postg
 - bcrypt (senhas)
 - JWT (autenticacao)
 - dotenv (variaveis de ambiente)
+- multer (upload de imagens)
 
 ---
 
@@ -68,6 +69,7 @@ backend-app/
 │   │   ├── pedidosController.js
 │   │   ├── avaliacoesController.js
 │   │   ├── favoritosController.js
+│   │   ├── portfolioController.js
 │   │   └── authController.js
 │   ├── middlewares/
 │   │   └── authMiddleware.js
@@ -78,8 +80,10 @@ backend-app/
 │   │   ├── pedidos.js
 │   │   ├── avaliacoes.js
 │   │   ├── favoritos.js
+│   │   ├── portfolio.js
 │   │   └── auth.js
 │   └── app.js
+├── uploads/              # Imagens salvas localmente
 ├── .env                  # NAO sobe no Git
 ├── .env.example
 ├── .gitignore
@@ -91,17 +95,8 @@ backend-app/
 ## Banco de dados — tabelas
 
 ```
-usuarios
-clientes
-fornecedores
-categorias
-servicos
-pedidos
-avaliacoes
-favoritos
-pagamentos
-mensagens
-portifolio
+usuarios, clientes, fornecedores, categorias, servicos,
+pedidos, avaliacoes, favoritos, pagamentos, mensagens, portifolio
 ```
 
 ---
@@ -265,17 +260,11 @@ O token e obtido no login e expira em 7 dias.
 | fornecedor | `aceito`, `recusado`, `concluido` |
 | cliente | `cancelado` |
 
-> Pedidos com status `concluido`, `cancelado` ou `recusado` nao podem ser alterados.
-
 ---
 
 #### GET `/pedidos/meus` — Listar pedidos do usuario logado (protegida)
 #### GET `/pedidos/:id` — Buscar pedido por ID (protegida)
-
----
-
-#### PATCH `/pedidos/:id/status` — Atualizar status
-**Rota protegida**
+#### PATCH `/pedidos/:id/status` — Atualizar status (protegida)
 
 **Body:**
 ```json
@@ -291,11 +280,7 @@ O token e obtido no login e expira em 7 dias.
 #### POST `/avaliacoes` — Criar avaliacao
 **Rota protegida — token de cliente**
 
-Regras:
-- So pode avaliar pedidos com status `concluido`
-- 1 avaliacao por pedido
-- Nota de 1 a 5 estrelas
-- Comentario e opcional
+Regras: so apos pedido concluido, 1 por pedido, nota de 1 a 5.
 
 **Body:**
 ```json
@@ -306,40 +291,16 @@ Regras:
 }
 ```
 
-`400` — pedido nao concluido | `409` — pedido ja avaliado
-
 ---
 
 #### GET `/avaliacoes/servico/:id` — Avaliacoes de um servico (publico)
-
-```json
-{
-  "servico_id": 1,
-  "total_avaliacoes": 1,
-  "media_nota": 5,
-  "avaliacoes": [ ... ]
-}
-```
-
----
-
 #### GET `/avaliacoes/fornecedor/:id` — Avaliacoes de um fornecedor (publico)
-
-```json
-{
-  "fornecedor_usuario_id": 1,
-  "total_avaliacoes": 1,
-  "media_geral": 5,
-  "avaliacoes": [ ... ]
-}
-```
 
 ---
 
 ### 6. Favoritos
 
-#### POST `/favoritos` — Adicionar favorito
-**Rota protegida — token de cliente**
+#### POST `/favoritos` — Adicionar favorito (protegida — cliente)
 
 **Body:**
 ```json
@@ -348,60 +309,46 @@ Regras:
 }
 ```
 
+---
+
+#### DELETE `/favoritos/:servico_id` — Remover favorito (protegida — cliente)
+#### GET `/favoritos` — Listar favoritos do cliente (protegida — cliente)
+
+---
+
+### 7. Portfolio
+
+#### POST `/portfolio` — Adicionar imagem
+**Rota protegida — token de fornecedor**
+**Content-Type: multipart/form-data**
+
+| Campo | Tipo | Descricao |
+|---|---|---|
+| imagem | File | Arquivo JPG, PNG ou WEBP (max 5MB) |
+| servico_id | Text | ID do servico |
+
 **Resposta `201`:**
 ```json
 {
-  "mensagem": "Servico adicionado aos favoritos!",
-  "favorito": {
+  "mensagem": "Imagem adicionada ao portfolio!",
+  "imagem": {
     "id": 1,
-    "cliente_id": 1,
-    "servico_id": 1
-  }
-}
-```
-
-`409` — servico ja esta nos favoritos.
-
----
-
-#### DELETE `/favoritos/:servico_id` — Remover favorito
-**Rota protegida — token de cliente**
-
-Exemplo: `DELETE http://localhost:3000/favoritos/1`
-
-**Resposta `200`:**
-```json
-{
-  "mensagem": "Servico removido dos favoritos!"
-}
-```
-
----
-
-#### GET `/favoritos` — Listar favoritos do cliente logado
-**Rota protegida — token de cliente**
-
-**Resposta `200`:**
-```json
-[
-  {
-    "favorito_id": 1,
     "servico_id": 1,
-    "servico": "Corte de cabelo",
-    "descricao": "Corte feminino com lavagem e escova",
-    "preco": "80",
-    "categoria": "Beleza e Estetica",
-    "nome_loja": "Studio Marina",
-    "nome_fornecedor": "Marina Silva",
-    "cidade": "Fortaleza",
-    "estado": "CE"
+    "url_imagem": "/uploads/1778636836988-foto.jpeg"
   }
-]
+}
 ```
+
+> A imagem fica acessivel em `http://localhost:3000/uploads/nome-do-arquivo.jpeg`
 
 ---
 
-### 7. Autenticacao
+#### DELETE `/portfolio/:id` — Remover imagem (protegida — fornecedor)
+#### GET `/portfolio/servico/:id` — Listar imagens de um servico (publico)
+
+---
+
+### 8. Autenticacao
 
 #### POST `/auth/login` — Login
 
@@ -427,8 +374,6 @@ Exemplo: `DELETE http://localhost:3000/favoritos/1`
 }
 ```
 
-`401` — credenciais invalidas.
-
 ---
 
 ## Observacoes para o front
@@ -444,5 +389,6 @@ Exemplo: `DELETE http://localhost:3000/favoritos/1`
 9. **Pedidos:** o valor e copiado automaticamente do servico.
 10. **Status do pedido:** fornecedor pode aceitar, recusar ou concluir. Cliente so pode cancelar.
 11. **Avaliacoes:** so apos pedido concluido. Nota de 1 a 5 — mapear estrelas para numeros.
-12. **Favoritos:** cliente pode adicionar, remover e listar favoritos. Nao pode favoritar servico duplicado.
-13. **Emulador Android:** usar `http://10.0.2.2:3000` em vez de `http://localhost:3000`.
+12. **Favoritos:** cliente pode adicionar, remover e listar. Nao pode duplicar.
+13. **Portfolio:** enviar como `multipart/form-data`, nao como JSON. Imagem max 5MB.
+14. **Emulador Android:** usar `http://10.0.2.2:3000` em vez de `http://localhost:3000`.
