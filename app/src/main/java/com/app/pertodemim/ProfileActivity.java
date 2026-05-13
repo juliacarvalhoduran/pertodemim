@@ -55,6 +55,8 @@ public class ProfileActivity extends AppCompatActivity {
 
     // Adiciona interatividade aos botões de configuração e histórico
     private void setupInteractions() {
+        findViewById(R.id.btnEditProfile).setOnClickListener(v -> startActivity(new Intent(this, EditProfileActivity.class)));
+
         findViewById(R.id.ivSettings).setOnClickListener(v -> startActivity(new Intent(this, SettingsActivity.class)));
         
         findViewById(R.id.tvManageAddresses).setOnClickListener(v -> startActivity(new Intent(this, ManageAddressesActivity.class)));
