@@ -67,6 +67,7 @@ backend-app/
 │   │   ├── servicosController.js
 │   │   ├── pedidosController.js
 │   │   ├── avaliacoesController.js
+│   │   ├── favoritosController.js
 │   │   └── authController.js
 │   ├── middlewares/
 │   │   └── authMiddleware.js
@@ -76,6 +77,7 @@ backend-app/
 │   │   ├── servicos.js
 │   │   ├── pedidos.js
 │   │   ├── avaliacoes.js
+│   │   ├── favoritos.js
 │   │   └── auth.js
 │   └── app.js
 ├── .env                  # NAO sobe no Git
@@ -304,57 +306,18 @@ Regras:
 }
 ```
 
-**Resposta `201`:**
-```json
-{
-  "mensagem": "Avaliacao registrada com sucesso!",
-  "avaliacao": {
-    "id": 1,
-    "cliente_id": 1,
-    "servico_id": 1,
-    "pedido_id": 1,
-    "nota": 5,
-    "comentario": "Excelente servico!",
-    "created_at": "2026-05-13T00:03:23.432Z"
-  }
-}
-```
-
-`400` — pedido nao concluido:
-```json
-{
-  "erro": "So e possivel avaliar pedidos com status \"concluido\"."
-}
-```
-
-`409` — pedido ja avaliado:
-```json
-{
-  "erro": "Este pedido ja foi avaliado."
-}
-```
+`400` — pedido nao concluido | `409` — pedido ja avaliado
 
 ---
 
 #### GET `/avaliacoes/servico/:id` — Avaliacoes de um servico (publico)
 
-Retorna lista de avaliacoes com media de notas.
-
-**Resposta `200`:**
 ```json
 {
   "servico_id": 1,
   "total_avaliacoes": 1,
   "media_nota": 5,
-  "avaliacoes": [
-    {
-      "id": 1,
-      "nota": 5,
-      "comentario": "Excelente servico!",
-      "nome_cliente": "Julia Cliente",
-      "servico": "Corte de cabelo"
-    }
-  ]
+  "avaliacoes": [ ... ]
 }
 ```
 
@@ -362,9 +325,6 @@ Retorna lista de avaliacoes com media de notas.
 
 #### GET `/avaliacoes/fornecedor/:id` — Avaliacoes de um fornecedor (publico)
 
-Retorna media geral e todas as avaliacoes do fornecedor.
-
-**Resposta `200`:**
 ```json
 {
   "fornecedor_usuario_id": 1,
@@ -376,7 +336,72 @@ Retorna media geral e todas as avaliacoes do fornecedor.
 
 ---
 
-### 6. Autenticacao
+### 6. Favoritos
+
+#### POST `/favoritos` — Adicionar favorito
+**Rota protegida — token de cliente**
+
+**Body:**
+```json
+{
+  "servico_id": 1
+}
+```
+
+**Resposta `201`:**
+```json
+{
+  "mensagem": "Servico adicionado aos favoritos!",
+  "favorito": {
+    "id": 1,
+    "cliente_id": 1,
+    "servico_id": 1
+  }
+}
+```
+
+`409` — servico ja esta nos favoritos.
+
+---
+
+#### DELETE `/favoritos/:servico_id` — Remover favorito
+**Rota protegida — token de cliente**
+
+Exemplo: `DELETE http://localhost:3000/favoritos/1`
+
+**Resposta `200`:**
+```json
+{
+  "mensagem": "Servico removido dos favoritos!"
+}
+```
+
+---
+
+#### GET `/favoritos` — Listar favoritos do cliente logado
+**Rota protegida — token de cliente**
+
+**Resposta `200`:**
+```json
+[
+  {
+    "favorito_id": 1,
+    "servico_id": 1,
+    "servico": "Corte de cabelo",
+    "descricao": "Corte feminino com lavagem e escova",
+    "preco": "80",
+    "categoria": "Beleza e Estetica",
+    "nome_loja": "Studio Marina",
+    "nome_fornecedor": "Marina Silva",
+    "cidade": "Fortaleza",
+    "estado": "CE"
+  }
+]
+```
+
+---
+
+### 7. Autenticacao
 
 #### POST `/auth/login` — Login
 
@@ -419,4 +444,5 @@ Retorna media geral e todas as avaliacoes do fornecedor.
 9. **Pedidos:** o valor e copiado automaticamente do servico.
 10. **Status do pedido:** fornecedor pode aceitar, recusar ou concluir. Cliente so pode cancelar.
 11. **Avaliacoes:** so apos pedido concluido. Nota de 1 a 5 — mapear estrelas para numeros.
-12. **Emulador Android:** usar `http://10.0.2.2:3000` em vez de `http://localhost:3000`.
+12. **Favoritos:** cliente pode adicionar, remover e listar favoritos. Nao pode favoritar servico duplicado.
+13. **Emulador Android:** usar `http://10.0.2.2:3000` em vez de `http://localhost:3000`.

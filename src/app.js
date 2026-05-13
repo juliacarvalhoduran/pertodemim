@@ -6,8 +6,7 @@ import fornecedoresRoutes from './routes/fornecedores.js';
 import servicosRoutes from './routes/servicos.js';
 import pedidosRoutes from './routes/pedidos.js';
 import avaliacoesRoutes from './routes/avaliacoes.js';
-
-
+import favoritosRoutes from './routes/favoritos.js';
 
 const app = express();
 
@@ -19,6 +18,7 @@ app.use('/fornecedores', fornecedoresRoutes);
 app.use('/servicos', servicosRoutes);
 app.use('/pedidos', pedidosRoutes);
 app.use('/avaliacoes', avaliacoesRoutes);
+app.use('/favoritos', favoritosRoutes);
 
 
 app.get('/', (req, res) => {
