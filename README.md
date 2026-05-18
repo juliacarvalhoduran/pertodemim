@@ -12,6 +12,8 @@ API REST do aplicativo Perto de Mim, desenvolvida em Node.js com Express e Postg
 - bcrypt (senhas)
 - JWT (autenticacao)
 - dotenv (variaveis de ambiente)
+- multer (upload de imagens)
+- nodemailer (envio de email)
 
 ---
 
@@ -25,7 +27,7 @@ API REST do aplicativo Perto de Mim, desenvolvida em Node.js com Express e Postg
 
 1. Clone o repositorio:
 ```bash
-git clone https://github.com/marinacpontes/PertoDeMim.git
+git clone https://github.com/marinacpontes/pertodemim.git
 ```
 
 2. Instale as dependencias:
@@ -33,22 +35,27 @@ git clone https://github.com/marinacpontes/PertoDeMim.git
 npm install
 ```
 
-3. Crie o arquivo `.env` na raiz do projeto com as variaveis:
+3. Crie o arquivo `.env` na raiz do projeto:
 ```
-DB_USER=postgres
+DB_USER=seu_usuario_postgres
 DB_HOST=localhost
 DB_NAME=perto_de_mim
 DB_PASSWORD=sua_senha
 DB_PORT=5432
 JWT_SECRET=uma_chave_secreta_longa
+EMAIL_USER=seu_email@gmail.com
+EMAIL_PASS=sua_app_password_gmail
 ```
+
+> **Mac:** o usuario geralmente e o nome do sistema (ex: `juliaduran`). **Windows:** geralmente e `postgres`.
+> **EMAIL_PASS:** usar App Password do Gmail (nao a senha normal). Gerar em: Minha Conta Google → Segurança → Senhas de app.
 
 4. Rode o servidor:
 ```bash
 node src/app.js
 ```
 
-O servidor sobe em `http://localhost:3000`
+Servidor em `http://localhost:3000`
 
 ---
 
@@ -64,6 +71,12 @@ backend-app/
 │   │   ├── fornecedoresController.js
 │   │   ├── servicosController.js
 │   │   ├── pedidosController.js
+│   │   ├── avaliacoesController.js
+│   │   ├── favoritosController.js
+│   │   ├── portfolioController.js
+│   │   ├── pagamentosController.js
+│   │   ├── mensagensController.js
+│   │   ├── recuperacaoSenhaController.js
 │   │   └── authController.js
 │   ├── middlewares/
 │   │   └── authMiddleware.js
@@ -72,12 +85,38 @@ backend-app/
 │   │   ├── fornecedores.js
 │   │   ├── servicos.js
 │   │   ├── pedidos.js
+│   │   ├── avaliacoes.js
+│   │   ├── favoritos.js
+│   │   ├── portfolio.js
+│   │   ├── pagamentos.js
+│   │   ├── mensagens.js
+│   │   ├── recuperacao.js
 │   │   └── auth.js
 │   └── app.js
+├── uploads/              # Imagens de portfolio e chat
 ├── .env                  # NAO sobe no Git
 ├── .env.example
 ├── .gitignore
 └── package.json
+```
+
+---
+
+## app.js — rotas registradas
+
+```js
+app.use('/usuarios', usuariosRoutes);
+app.use('/auth', authRoutes);
+app.use('/recuperacao', recuperacaoRoutes);
+app.use('/fornecedores', fornecedoresRoutes);
+app.use('/servicos', servicosRoutes);
+app.use('/pedidos', pedidosRoutes);
+app.use('/avaliacoes', avaliacoesRoutes);
+app.use('/favoritos', favoritosRoutes);
+app.use('/uploads', express.static('uploads'));
+app.use('/portfolio', portfolioRoutes);
+app.use('/pagamentos', pagamentosRoutes);
+app.use('/mensagens', mensagensRoutes);
 ```
 
 ---
@@ -90,7 +129,7 @@ Rotas protegidas exigem token JWT no header:
 Authorization: Bearer <token>
 ```
 
-O token e obtido no login e expira em 7 dias.
+Token obtido no login, expira em 7 dias.
 
 ---
 
@@ -120,25 +159,18 @@ O token e obtido no login e expira em 7 dias.
 }
 ```
 
-**Regras de validacao:**
 | Campo | Regra |
 |---|---|
 | nome | Obrigatorio, max 40 caracteres |
-| email | Obrigatorio, formato valido. Nao pode ser duplicado |
-| senha | Obrigatorio, minimo 6 caracteres |
-| tipo | Obrigatorio: `"cliente"` ou `"fornecedor"` |
-| telefone | Obrigatorio, DDD valido + numero (so digitos, 10 ou 11) |
-| cpf_cnpj | Obrigatorio, CPF (11 digitos) ou CNPJ (14 digitos). Nao pode ser duplicado |
-| data_nascimento | Obrigatorio, formato `YYYY-MM-DD`. Cliente: min 16 anos. Fornecedor: min 18 anos |
+| email | Obrigatorio, formato valido, unico |
+| senha | Obrigatorio, min 6 caracteres |
+| tipo | `"cliente"` ou `"fornecedor"` |
+| telefone | DDD valido + numero, so digitos |
+| cpf_cnpj | CPF (11) ou CNPJ (14) digitos, unico |
+| data_nascimento | `YYYY-MM-DD`. Cliente: min 16 anos. Fornecedor: min 18 anos |
 | logradouro | Obrigatorio, max 50 caracteres |
-| cep | Obrigatorio, 8 digitos |
-| numero | Obrigatorio |
-| bairro | Obrigatorio |
-| cidade | Obrigatorio |
-| estado | Obrigatorio, sigla ex: `"CE"` |
+| cep | 8 digitos |
 | complemento | Opcional |
-
-`201` — usuario criado | `400` — erro de validacao | `409` — duplicidade
 
 ---
 
@@ -174,12 +206,9 @@ O token e obtido no login e expira em 7 dias.
 }
 ```
 
-> Quando `categoria` for `"Outros"`, adicionar `"categoria_outro": "Tatuagem"`.
+**Categorias validas:** `Beleza e Estetica` | `Saude` | `Alimentacao` | `Manutencao` | `Tecnologia` | `Outros`
 
-**Categorias validas:**
-`Beleza e Estetica` | `Saude` | `Alimentacao` | `Manutencao` | `Tecnologia` | `Outros`
-
-`201` — fornecedor cadastrado | `400` — erro de validacao | `409` — duplicidade
+> Quando `"Outros"`, adicionar `"categoria_outro": "descricao"`.
 
 ---
 
@@ -190,8 +219,7 @@ O token e obtido no login e expira em 7 dias.
 
 ### 3. Servicos
 
-#### POST `/servicos` — Cadastrar servico
-**Rota protegida — token de fornecedor**
+#### POST `/servicos` — Cadastrar servico (protegida — fornecedor)
 
 **Body:**
 ```json
@@ -203,138 +231,204 @@ O token e obtido no login e expira em 7 dias.
 }
 ```
 
-**Categorias (IDs):**
-| ID | Nome |
-|---|---|
-| 1 | Beleza e Estetica |
-| 2 | Saude |
-| 3 | Alimentacao |
-| 4 | Manutencao |
-| 5 | Tecnologia |
-| 6 | Outros |
-
-`201` — servico cadastrado | `400` — erro de validacao | `403` — usuario nao e fornecedor
+**Categorias:** 1-Beleza | 2-Saude | 3-Alimentacao | 4-Manutencao | 5-Tecnologia | 6-Outros
 
 ---
 
 #### GET `/servicos` — Listar todos (publico)
 #### GET `/servicos/:id` — Buscar por ID (publico)
-#### GET `/servicos/fornecedor/:id` — Listar servicos de um fornecedor (publico)
+#### GET `/servicos/fornecedor/:id` — Servicos de um fornecedor (publico)
 
 ---
 
 ### 4. Pedidos
 
-#### POST `/pedidos` — Criar pedido
-**Rota protegida — token de cliente**
+#### POST `/pedidos` — Criar pedido (protegida — cliente)
 
-Ao criar o pedido, o valor e copiado automaticamente do servico e o status inicia como `pendente`.
+**Body:** `{ "servico_id": 1 }`
 
-**Body:**
-```json
-{
-  "servico_id": 1
-}
-```
-
-**Resposta `201`:**
-```json
-{
-  "mensagem": "Pedido criado com sucesso!",
-  "pedido": {
-    "id": 1,
-    "cliente_id": 1,
-    "servico_id": 1,
-    "status": "pendente",
-    "valor": "80",
-    "data": "2026-05-04T17:41:12.720Z"
-  }
-}
-```
-
-`403` — usuario nao e cliente:
-```json
-{
-  "erro": "Apenas clientes podem criar pedidos."
-}
-```
-
----
-
-#### GET `/pedidos/meus` — Listar pedidos do usuario logado
-**Rota protegida**
-
-- Cliente ve seus proprios pedidos com dados do servico e da loja
-- Fornecedor ve pedidos dos seus servicos com dados do cliente
-
----
-
-#### GET `/pedidos/:id` — Buscar pedido por ID
-**Rota protegida**
-
----
-
-#### PATCH `/pedidos/:id/status` — Atualizar status do pedido
-**Rota protegida**
-
-**Body:**
-```json
-{
-  "status": "aceito"
-}
-```
-
-**Regras de status por tipo de usuario:**
-| Tipo | Status permitidos |
+**Status por tipo:**
+| Tipo | Permitidos |
 |---|---|
 | fornecedor | `aceito`, `recusado`, `concluido` |
+| cliente | `cancelado` (ate 2h apos aceito) |
+
+> **Politica de cancelamento:** cliente so pode cancelar ate 2 horas apos o fornecedor aceitar.
+
+---
+
+#### GET `/pedidos/meus` — Meus pedidos (protegida)
+#### GET `/pedidos/:id` — Buscar por ID (protegida)
+#### PATCH `/pedidos/:id/status` — Atualizar status (protegida)
+
+**Body:** `{ "status": "aceito" }`
+
+---
+
+### 5. Pagamentos
+
+#### POST `/pagamentos/:pedido_id` — Registrar pagamento (protegida — cliente)
+
+So para pedidos com status `aceito`.
+
+**Formas aceitas:** `pix`, `cartao_credito`, `cartao_debito`
+
+**Body:** `{ "forma_pagamento": "pix" }`
+
+---
+
+#### GET `/pagamentos/:pedido_id` — Consultar pagamento (protegida)
+
+---
+
+#### PATCH `/pagamentos/:pedido_id/status` — Atualizar status (protegida)
+
+| Tipo | Permitido |
+|---|---|
+| fornecedor | `pago` |
 | cliente | `cancelado` |
 
-> Pedidos com status `concluido`, `cancelado` ou `recusado` nao podem ser alterados.
+**Body:** `{ "status": "pago" }`
 
-**Respostas:**
+---
 
-`200` — status atualizado:
+### 6. Avaliacoes
+
+#### POST `/avaliacoes` — Avaliar (protegida — cliente)
+
+So apos pedido `concluido`. 1 avaliacao por pedido. Nota 1-5.
+
+**Body:**
 ```json
 {
-  "mensagem": "Status atualizado com sucesso!",
-  "pedido": {
-    "id": 1,
-    "status": "aceito",
-    ...
-  }
-}
-```
-
-`400` — status invalido para o tipo de usuario:
-```json
-{
-  "erro": "Cliente so pode cancelar o pedido."
-}
-```
-
-`403` — pedido nao pertence ao usuario:
-```json
-{
-  "erro": "Voce nao tem permissao para alterar este pedido."
+  "pedido_id": 1,
+  "nota": 5,
+  "comentario": "Excelente servico!"
 }
 ```
 
 ---
 
-### 5. Autenticacao
+#### GET `/avaliacoes/servico/:id` — Por servico (publico)
+#### GET `/avaliacoes/fornecedor/:id` — Por fornecedor com media (publico)
 
-#### POST `/auth/login` — Login
+---
+
+### 7. Favoritos
+
+#### POST `/favoritos` — Adicionar (protegida — cliente)
+
+**Body:** `{ "servico_id": 1 }`
+
+---
+
+#### DELETE `/favoritos/:servico_id` — Remover (protegida — cliente)
+#### GET `/favoritos` — Listar favoritos (protegida — cliente)
+
+---
+
+### 8. Portfolio
+
+#### POST `/portfolio` — Adicionar imagem (protegida — fornecedor)
+**Content-Type: multipart/form-data**
+
+| Campo | Tipo | Detalhe |
+|---|---|---|
+| imagem | File | JPG, PNG ou WEBP, max 5MB |
+| servico_id | Text | ID do servico |
+
+> Imagem acessivel em `http://localhost:3000/uploads/nome-arquivo.jpeg`
+
+---
+
+#### DELETE `/portfolio/:id` — Remover imagem (protegida — fornecedor)
+#### GET `/portfolio/servico/:id` — Listar por servico (publico)
+
+---
+
+### 9. Mensagens
+
+#### POST `/mensagens` — Enviar mensagem (protegida)
+
+**Texto (raw JSON):**
+```json
+{
+  "destinatario_id": 1,
+  "mensagem": "Ola! Gostaria de saber mais sobre o servico."
+}
+```
+
+**Imagem (form-data):**
+| Campo | Tipo | Detalhe |
+|---|---|---|
+| imagem | File | JPG, PNG ou WEBP, max 200MB |
+| destinatario_id | Text | ID do destinatario |
+
+---
+
+#### GET `/mensagens/conversas` — Listar todas as conversas (protegida)
+#### GET `/mensagens/:outro_usuario_id` — Listar conversa com um usuario (protegida)
+
+---
+
+### 10. Recuperacao de senha
+
+Fluxo em 3 passos: solicitar codigo → validar codigo → redefinir senha.
+
+#### POST `/recuperacao/solicitar` — Solicitar codigo por email
+
+**Body:** `{ "email": "julia@email.com" }`
+
+**Resposta:**
+```json
+{
+  "mensagem": "Se este e-mail estiver cadastrado, voce recebera um codigo em breve."
+}
+```
+
+> O codigo de 6 digitos e enviado por email e expira em **15 minutos**.
+
+---
+
+#### POST `/recuperacao/validar` — Validar codigo
 
 **Body:**
 ```json
 {
   "email": "julia@email.com",
-  "senha": "123456"
+  "codigo": "304171"
 }
 ```
 
-**Resposta `200`:**
+---
+
+#### POST `/recuperacao/redefinir` — Redefinir senha
+
+**Body:**
+```json
+{
+  "email": "julia@email.com",
+  "codigo": "304171",
+  "nova_senha": "novaSenha123"
+}
+```
+
+**Resposta:**
+```json
+{
+  "mensagem": "Senha redefinida com sucesso!"
+}
+```
+
+---
+
+### 11. Autenticacao
+
+#### POST `/auth/login` — Login
+
+**Body:** `{ "email": "julia@email.com", "senha": "123456" }`
+
+**Resposta:**
 ```json
 {
   "mensagem": "Login realizado com sucesso!",
@@ -348,53 +442,23 @@ Ao criar o pedido, o valor e copiado automaticamente do servico e o status inici
 }
 ```
 
-`401` — credenciais invalidas.
-
 ---
 
 ## Observacoes para o front
 
-1. **Mascaras:** aplicar mascara visualmente mas remover antes de enviar.
-2. **Data de nascimento:** enviar no formato `YYYY-MM-DD`.
-3. **Tipo:** usar o campo `tipo` retornado no login para redirecionar — cliente vai para tela de cliente, fornecedor para dashboard.
-4. **Token expirado:** se a API retornar `401` em rota protegida, redirecionar para o login.
-5. **Erros:** a API retorna todos os erros de uma vez no array `erros`.
+1. **Mascaras:** remover antes de enviar para a API.
+2. **Data de nascimento:** formato `YYYY-MM-DD`.
+3. **Tipo:** usar `tipo` do login para redirecionar cliente/fornecedor.
+4. **Token expirado:** `401` em rota protegida → redirecionar para login.
+5. **Erros:** retornados todos de uma vez no array `erros`.
 6. **Idade minima:** cliente 16 anos, fornecedor 18 anos.
-7. **Categoria Outros:** quando o usuario selecionar "Outros", exibir campo de texto e enviar `categoria_outro`.
-8. **Servicos:** para cadastrar servico, enviar token no header. Para listar ou buscar, nao precisa de token.
-9. **Pedidos:** o valor e copiado automaticamente do servico — nao precisa enviar no body.
-10. **Status do pedido:** fornecedor pode aceitar, recusar ou concluir. Cliente so pode cancelar.
-11. **Emulador Android:** usar `http://10.0.2.2:3000` em vez de `http://localhost:3000`.
-
----
-
-## Exemplo em JavaScript
-
-```javascript
-// Criar pedido (cliente logado)
-const responsePedido = await fetch('http://localhost:3000/pedidos', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${token}`,
-  },
-  body: JSON.stringify({ servico_id: 1 }),
-});
-
-// Atualizar status (fornecedor logado)
-const responseStatus = await fetch('http://localhost:3000/pedidos/1/status', {
-  method: 'PATCH',
-  headers: {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${token}`,
-  },
-  body: JSON.stringify({ status: 'aceito' }),
-});
-
-// Listar meus pedidos
-const responseMeus = await fetch('http://localhost:3000/pedidos/meus', {
-  headers: {
-    'Authorization': `Bearer ${token}`,
-  },
-});
-```
+7. **Categoria Outros:** exibir campo de texto, enviar `categoria_outro`.
+8. **Pedidos:** valor copiado automaticamente do servico.
+9. **Cancelamento:** so ate 2h apos aceito pelo fornecedor.
+10. **Pagamentos:** formas aceitas: `pix`, `cartao_credito`, `cartao_debito`.
+11. **Avaliacoes:** so apos `concluido`. Mapear estrelas (1-5) para numeros.
+12. **Portfolio:** enviar como `multipart/form-data`. Max 5MB.
+13. **Mensagens texto:** enviar como `raw JSON`. Mensagens imagem: `form-data`. Max 200MB.
+14. **Recuperacao de senha:** fluxo em 3 etapas. Codigo expira em 15 minutos.
+15. **Datas:** retornadas em UTC. Converter para `America/Sao_Paulo` ao exibir.
+16. **Emulador Android:** usar `http://10.0.2.2:3000` em vez de `http://localhost:3000`.

@@ -1,13 +1,13 @@
 import pool from '../config/db.js';
 
+// =========================================
 // CRIAR PEDIDO
 // Apenas cliente logado pode criar
-
+// =========================================
 export const criarPedido = async (req, res) => {
   try {
     const { id: usuario_id, tipo } = req.usuario;
 
-    // So cliente pode criar pedido
     if (tipo !== 'cliente') {
       return res.status(403).json({ erro: 'Apenas clientes podem criar pedidos.' });
     }
@@ -18,7 +18,6 @@ export const criarPedido = async (req, res) => {
       return res.status(400).json({ erros: ['ID do servico e obrigatorio.'] });
     }
 
-    // Busca o servico para pegar o preco
     const servicoResult = await pool.query(
       `SELECT s.id, s.nome, s.preco, f.usuario_id AS fornecedor_usuario_id
        FROM servicos s
@@ -33,18 +32,15 @@ export const criarPedido = async (req, res) => {
 
     const servico = servicoResult.rows[0];
 
-    // Cliente nao pode pedir o proprio servico
     if (servico.fornecedor_usuario_id === usuario_id) {
       return res.status(400).json({ erro: 'Voce nao pode contratar seu proprio servico.' });
     }
 
-    // Busca o cliente_id a partir do usuario_id
     const clienteResult = await pool.query(
       'SELECT id FROM clientes WHERE usuario_id = $1',
       [usuario_id]
     );
 
-    // Se nao tiver registro em clientes, cria automaticamente
     let cliente_id;
     if (clienteResult.rows.length === 0) {
       const novoCliente = await pool.query(
@@ -56,7 +52,6 @@ export const criarPedido = async (req, res) => {
       cliente_id = clienteResult.rows[0].id;
     }
 
-    // Cria o pedido com status "pendente" e o valor do servico
     const result = await pool.query(
       `INSERT INTO pedidos (cliente_id, servico_id, status, valor)
        VALUES ($1, $2, 'pendente', $3)
@@ -75,9 +70,9 @@ export const criarPedido = async (req, res) => {
   }
 };
 
+// =========================================
 // LISTAR PEDIDOS DO USUARIO LOGADO
-// Cliente ve seus pedidos
-// Fornecedor ve pedidos dos seus servicos
+// =========================================
 export const listarMeusPedidos = async (req, res) => {
   try {
     const { id: usuario_id, tipo } = req.usuario;
@@ -87,7 +82,7 @@ export const listarMeusPedidos = async (req, res) => {
     if (tipo === 'cliente') {
       result = await pool.query(
         `SELECT
-          p.id, p.status, p.valor, p.data,
+          p.id, p.status, p.valor, p.data, p.data_aceito,
           s.nome AS servico,
           u.nome AS nome_fornecedor,
           f.nome_loja
@@ -101,10 +96,9 @@ export const listarMeusPedidos = async (req, res) => {
         [usuario_id]
       );
     } else {
-      // Fornecedor ve pedidos dos seus servicos
       result = await pool.query(
         `SELECT
-          p.id, p.status, p.valor, p.data,
+          p.id, p.status, p.valor, p.data, p.data_aceito,
           s.nome AS servico,
           u.nome AS nome_cliente,
           u.telefone AS telefone_cliente
@@ -127,15 +121,16 @@ export const listarMeusPedidos = async (req, res) => {
   }
 };
 
+// =========================================
 // BUSCAR PEDIDO POR ID
+// =========================================
 export const buscarPedidoPorId = async (req, res) => {
   try {
     const { id } = req.params;
-    const { id: usuario_id, tipo } = req.usuario;
 
     const result = await pool.query(
       `SELECT
-        p.id, p.status, p.valor, p.data,
+        p.id, p.status, p.valor, p.data, p.data_aceito,
         s.nome AS servico, s.descricao AS descricao_servico,
         f.nome_loja,
         uf.nome AS nome_fornecedor,
@@ -162,16 +157,17 @@ export const buscarPedidoPorId = async (req, res) => {
   }
 };
 
+// =========================================
 // ATUALIZAR STATUS DO PEDIDO
 // Fornecedor: aceito, recusado, concluido
-// Cliente: cancelado
+// Cliente: cancelado (apenas ate 2 horas apos aceito)
+// =========================================
 export const atualizarStatusPedido = async (req, res) => {
   try {
     const { id } = req.params;
     const { status } = req.body;
     const { id: usuario_id, tipo } = req.usuario;
 
-    // Valida o status enviado conforme o tipo do usuario
     const statusPermitidosFornecedor = ['aceito', 'recusado', 'concluido'];
     const statusPermitidosCliente = ['cancelado'];
 
@@ -187,9 +183,8 @@ export const atualizarStatusPedido = async (req, res) => {
       });
     }
 
-    // Verifica se o pedido existe e se o usuario tem permissao
     const pedidoResult = await pool.query(
-      `SELECT p.id, p.status,
+      `SELECT p.id, p.status, p.data_aceito,
               c.usuario_id AS cliente_usuario_id,
               f.usuario_id AS fornecedor_usuario_id
        FROM pedidos p
@@ -206,7 +201,6 @@ export const atualizarStatusPedido = async (req, res) => {
 
     const pedido = pedidoResult.rows[0];
 
-    // Verifica se o usuario logado e dono do pedido ou do servico
     if (tipo === 'cliente' && pedido.cliente_usuario_id !== usuario_id) {
       return res.status(403).json({ erro: 'Voce nao tem permissao para alterar este pedido.' });
     }
@@ -215,17 +209,39 @@ export const atualizarStatusPedido = async (req, res) => {
       return res.status(403).json({ erro: 'Voce nao tem permissao para alterar este pedido.' });
     }
 
-    // Nao pode alterar pedido ja concluido ou cancelado
     if (['concluido', 'cancelado', 'recusado'].includes(pedido.status)) {
       return res.status(400).json({
         erro: `Pedido ja esta ${pedido.status} e nao pode ser alterado.`
       });
     }
 
-    // Atualiza o status
+    // Valida prazo de cancelamento — 2 horas apos aceito
+    if (tipo === 'cliente' && status === 'cancelado') {
+      if (!pedido.data_aceito) {
+        return res.status(400).json({
+          erro: 'Nao e possivel cancelar um pedido que ainda nao foi aceito pelo fornecedor.'
+        });
+      }
+
+      const dataAceito = new Date(pedido.data_aceito);
+      const agora = new Date();
+      const diferencaHoras = (agora - dataAceito) / (1000 * 60 * 60);
+
+      if (diferencaHoras > 2) {
+        return res.status(400).json({
+          erro: 'Prazo de cancelamento expirado. O pedido so pode ser cancelado ate 2 horas apos ser aceito.'
+        });
+      }
+    }
+
+    // Se fornecedor aceitar, salva a data de aceite
+    const novaDataAceito = (tipo === 'fornecedor' && status === 'aceito')
+      ? new Date()
+      : pedido.data_aceito;
+
     const result = await pool.query(
-      `UPDATE pedidos SET status = $1 WHERE id = $2 RETURNING *`,
-      [status, id]
+      `UPDATE pedidos SET status = $1, data_aceito = $2 WHERE id = $3 RETURNING *`,
+      [status, novaDataAceito, id]
     );
 
     return res.json({
