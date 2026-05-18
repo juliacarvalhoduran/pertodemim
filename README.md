@@ -70,6 +70,7 @@ backend-app/
 │   │   ├── avaliacoesController.js
 │   │   ├── favoritosController.js
 │   │   ├── portfolioController.js
+│   │   ├── pagamentosController.js
 │   │   └── authController.js
 │   ├── middlewares/
 │   │   └── authMiddleware.js
@@ -81,6 +82,7 @@ backend-app/
 │   │   ├── avaliacoes.js
 │   │   ├── favoritos.js
 │   │   ├── portfolio.js
+│   │   ├── pagamentos.js
 │   │   └── auth.js
 │   └── app.js
 ├── uploads/              # Imagens salvas localmente
@@ -260,10 +262,17 @@ O token e obtido no login e expira em 7 dias.
 | fornecedor | `aceito`, `recusado`, `concluido` |
 | cliente | `cancelado` |
 
+> **Politica de cancelamento:** cliente so pode cancelar ate **2 horas** apos o pedido ser aceito pelo fornecedor. Apos esse prazo o cancelamento nao e permitido.
+
+> Datas retornadas em UTC — converter para horario de Brasilia no front (`America/Sao_Paulo`).
+
 ---
 
 #### GET `/pedidos/meus` — Listar pedidos do usuario logado (protegida)
 #### GET `/pedidos/:id` — Buscar pedido por ID (protegida)
+
+---
+
 #### PATCH `/pedidos/:id/status` — Atualizar status (protegida)
 
 **Body:**
@@ -273,9 +282,69 @@ O token e obtido no login e expira em 7 dias.
 }
 ```
 
+`400` — prazo de cancelamento expirado:
+```json
+{
+  "erro": "Prazo de cancelamento expirado. O pedido so pode ser cancelado ate 2 horas apos ser aceito."
+}
+```
+
 ---
 
-### 5. Avaliacoes
+### 5. Pagamentos
+
+#### POST `/pagamentos/:pedido_id` — Registrar pagamento
+**Rota protegida — token de cliente**
+
+So pode registrar pagamento de pedidos com status `aceito`.
+
+**Formas de pagamento aceitas:** `pix`, `cartao_credito`, `cartao_debito`
+
+**Body:**
+```json
+{
+  "forma_pagamento": "pix"
+}
+```
+
+**Resposta `201`:**
+```json
+{
+  "mensagem": "Pagamento registrado com sucesso!",
+  "pagamento": {
+    "id": 1,
+    "pedido_id": 3,
+    "forma_pagamento": "pix",
+    "status": "aguardando",
+    "created_at": "2026-05-18T16:19:03.071Z"
+  }
+}
+```
+
+---
+
+#### GET `/pagamentos/:pedido_id` — Consultar pagamento (protegida)
+
+---
+
+#### PATCH `/pagamentos/:pedido_id/status` — Atualizar status do pagamento (protegida)
+
+**Regras:**
+| Tipo | Status permitidos |
+|---|---|
+| fornecedor | `pago` — confirma que recebeu |
+| cliente | `cancelado` — cancela o pagamento |
+
+**Body:**
+```json
+{
+  "status": "pago"
+}
+```
+
+---
+
+### 6. Avaliacoes
 
 #### POST `/avaliacoes` — Criar avaliacao
 **Rota protegida — token de cliente**
@@ -298,7 +367,7 @@ Regras: so apos pedido concluido, 1 por pedido, nota de 1 a 5.
 
 ---
 
-### 6. Favoritos
+### 7. Favoritos
 
 #### POST `/favoritos` — Adicionar favorito (protegida — cliente)
 
@@ -316,7 +385,7 @@ Regras: so apos pedido concluido, 1 por pedido, nota de 1 a 5.
 
 ---
 
-### 7. Portfolio
+### 8. Portfolio
 
 #### POST `/portfolio` — Adicionar imagem
 **Rota protegida — token de fornecedor**
@@ -327,18 +396,6 @@ Regras: so apos pedido concluido, 1 por pedido, nota de 1 a 5.
 | imagem | File | Arquivo JPG, PNG ou WEBP (max 5MB) |
 | servico_id | Text | ID do servico |
 
-**Resposta `201`:**
-```json
-{
-  "mensagem": "Imagem adicionada ao portfolio!",
-  "imagem": {
-    "id": 1,
-    "servico_id": 1,
-    "url_imagem": "/uploads/1778636836988-foto.jpeg"
-  }
-}
-```
-
 > A imagem fica acessivel em `http://localhost:3000/uploads/nome-do-arquivo.jpeg`
 
 ---
@@ -348,7 +405,7 @@ Regras: so apos pedido concluido, 1 por pedido, nota de 1 a 5.
 
 ---
 
-### 8. Autenticacao
+### 9. Autenticacao
 
 #### POST `/auth/login` — Login
 
@@ -387,8 +444,10 @@ Regras: so apos pedido concluido, 1 por pedido, nota de 1 a 5.
 7. **Categoria Outros:** exibir campo de texto e enviar `categoria_outro`.
 8. **Servicos:** para cadastrar precisa de token. Para listar nao precisa.
 9. **Pedidos:** o valor e copiado automaticamente do servico.
-10. **Status do pedido:** fornecedor pode aceitar, recusar ou concluir. Cliente so pode cancelar.
-11. **Avaliacoes:** so apos pedido concluido. Nota de 1 a 5 — mapear estrelas para numeros.
-12. **Favoritos:** cliente pode adicionar, remover e listar. Nao pode duplicar.
-13. **Portfolio:** enviar como `multipart/form-data`, nao como JSON. Imagem max 5MB.
-14. **Emulador Android:** usar `http://10.0.2.2:3000` em vez de `http://localhost:3000`.
+10. **Status do pedido:** fornecedor pode aceitar, recusar ou concluir. Cliente so pode cancelar em ate 2 horas.
+11. **Pagamentos:** formas aceitas sao `pix`, `cartao_credito` e `cartao_debito`.
+12. **Avaliacoes:** so apos pedido concluido. Nota de 1 a 5 — mapear estrelas para numeros.
+13. **Favoritos:** cliente pode adicionar, remover e listar. Nao pode duplicar.
+14. **Portfolio:** enviar como `multipart/form-data`, nao como JSON. Imagem max 5MB.
+15. **Datas:** todas as datas sao retornadas em UTC. Converter para `America/Sao_Paulo` ao exibir.
+16. **Emulador Android:** usar `http://10.0.2.2:3000` em vez de `http://localhost:3000`.
