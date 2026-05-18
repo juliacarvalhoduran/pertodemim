@@ -10,7 +10,7 @@ import favoritosRoutes from './routes/favoritos.js';
 import portfolioRoutes from './routes/portfolio.js';
 import pagamentosRoutes from './routes/pagamentos.js';
 import mensagensRoutes from './routes/mensagens.js';
-
+import recuperacaoRoutes from './routes/recuperacao.js';
 
 const app = express();
 
@@ -27,7 +27,7 @@ app.use('/uploads', express.static('uploads')); // serve as imagens estaticament
 app.use('/portfolio', portfolioRoutes);
 app.use('/pagamentos', pagamentosRoutes);
 app.use('/mensagens', mensagensRoutes);
-
+app.use('/recuperacao', recuperacaoRoutes);
 
 
 app.get('/', (req, res) => {

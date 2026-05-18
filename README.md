@@ -13,6 +13,7 @@ API REST do aplicativo Perto de Mim, desenvolvida em Node.js com Express e Postg
 - JWT (autenticacao)
 - dotenv (variaveis de ambiente)
 - multer (upload de imagens)
+- nodemailer (envio de email)
 
 ---
 
@@ -42,9 +43,12 @@ DB_NAME=perto_de_mim
 DB_PASSWORD=sua_senha
 DB_PORT=5432
 JWT_SECRET=uma_chave_secreta_longa
+EMAIL_USER=seu_email@gmail.com
+EMAIL_PASS=sua_app_password_gmail
 ```
 
 > **Mac:** o usuario geralmente e o nome do sistema (ex: `juliaduran`). **Windows:** geralmente e `postgres`.
+> **EMAIL_PASS:** usar App Password do Gmail (nao a senha normal). Gerar em: Minha Conta Google → Segurança → Senhas de app.
 
 4. Rode o servidor:
 ```bash
@@ -72,6 +76,7 @@ backend-app/
 │   │   ├── portfolioController.js
 │   │   ├── pagamentosController.js
 │   │   ├── mensagensController.js
+│   │   ├── recuperacaoSenhaController.js
 │   │   └── authController.js
 │   ├── middlewares/
 │   │   └── authMiddleware.js
@@ -85,6 +90,7 @@ backend-app/
 │   │   ├── portfolio.js
 │   │   ├── pagamentos.js
 │   │   ├── mensagens.js
+│   │   ├── recuperacao.js
 │   │   └── auth.js
 │   └── app.js
 ├── uploads/              # Imagens de portfolio e chat
@@ -101,6 +107,7 @@ backend-app/
 ```js
 app.use('/usuarios', usuariosRoutes);
 app.use('/auth', authRoutes);
+app.use('/recuperacao', recuperacaoRoutes);
 app.use('/fornecedores', fornecedoresRoutes);
 app.use('/servicos', servicosRoutes);
 app.use('/pedidos', pedidosRoutes);
@@ -343,8 +350,6 @@ So apos pedido `concluido`. 1 avaliacao por pedido. Nota 1-5.
 
 #### POST `/mensagens` — Enviar mensagem (protegida)
 
-Envio de texto ou imagem. Use `raw JSON` para texto ou `form-data` para imagem.
-
 **Texto (raw JSON):**
 ```json
 {
@@ -359,35 +364,65 @@ Envio de texto ou imagem. Use `raw JSON` para texto ou `form-data` para imagem.
 | imagem | File | JPG, PNG ou WEBP, max 200MB |
 | destinatario_id | Text | ID do destinatario |
 
-**Resposta `201`:**
+---
+
+#### GET `/mensagens/conversas` — Listar todas as conversas (protegida)
+#### GET `/mensagens/:outro_usuario_id` — Listar conversa com um usuario (protegida)
+
+---
+
+### 10. Recuperacao de senha
+
+Fluxo em 3 passos: solicitar codigo → validar codigo → redefinir senha.
+
+#### POST `/recuperacao/solicitar` — Solicitar codigo por email
+
+**Body:** `{ "email": "julia@email.com" }`
+
+**Resposta:**
 ```json
 {
-  "mensagem_enviada": {
-    "id": 1,
-    "remetente_id": 2,
-    "destinatario_id": 1,
-    "mensagem": "Ola!",
-    "data_envio": "2026-05-18T16:45:38.954Z"
-  },
-  "tipo": "texto"
+  "mensagem": "Se este e-mail estiver cadastrado, voce recebera um codigo em breve."
+}
+```
+
+> O codigo de 6 digitos e enviado por email e expira em **15 minutos**.
+
+---
+
+#### POST `/recuperacao/validar` — Validar codigo
+
+**Body:**
+```json
+{
+  "email": "julia@email.com",
+  "codigo": "304171"
 }
 ```
 
 ---
 
-#### GET `/mensagens/conversas` — Listar todas as conversas (protegida)
+#### POST `/recuperacao/redefinir` — Redefinir senha
 
-Retorna ultima mensagem de cada conversa.
+**Body:**
+```json
+{
+  "email": "julia@email.com",
+  "codigo": "304171",
+  "nova_senha": "novaSenha123"
+}
+```
+
+**Resposta:**
+```json
+{
+  "mensagem": "Senha redefinida com sucesso!"
+}
+```
 
 ---
 
-#### GET `/mensagens/:outro_usuario_id` — Listar conversa com um usuario (protegida)
-
-Retorna todas as mensagens em ordem cronologica.
-
----
-
-### 10. Autenticacao
+### 11. Autenticacao
 
 #### POST `/auth/login` — Login
 
@@ -424,5 +459,6 @@ Retorna todas as mensagens em ordem cronologica.
 11. **Avaliacoes:** so apos `concluido`. Mapear estrelas (1-5) para numeros.
 12. **Portfolio:** enviar como `multipart/form-data`. Max 5MB.
 13. **Mensagens texto:** enviar como `raw JSON`. Mensagens imagem: `form-data`. Max 200MB.
-14. **Datas:** retornadas em UTC. Converter para `America/Sao_Paulo` ao exibir.
-15. **Emulador Android:** usar `http://10.0.2.2:3000` em vez de `http://localhost:3000`.
+14. **Recuperacao de senha:** fluxo em 3 etapas. Codigo expira em 15 minutos.
+15. **Datas:** retornadas em UTC. Converter para `America/Sao_Paulo` ao exibir.
+16. **Emulador Android:** usar `http://10.0.2.2:3000` em vez de `http://localhost:3000`.
