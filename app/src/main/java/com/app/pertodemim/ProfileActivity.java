@@ -69,22 +69,24 @@ public class ProfileActivity extends AppCompatActivity {
 
         // Configura cliques nos itens do histórico
         findViewById(R.id.cardHistory1).setOnClickListener(v -> 
-            openServiceDetail("Corte + Escova", "Salão Bela Forma", "R$ 80,00", "15/04/2026"));
+            openServiceDetail("Corte + Escova", "Salão Bela Forma", "R$ 80,00", "15/04/2026", "Rua das Flores, 123 - Centro", "Beleza"));
             
         findViewById(R.id.cardHistory2).setOnClickListener(v -> 
-            openServiceDetail("Manutenção de Notebook", "TechFix Consertos", "R$ 150,00", "10/04/2026"));
+            openServiceDetail("Manutenção de Notebook", "TechFix Consertos", "R$ 150,00", "10/04/2026", "Av. Central, 500 - Sala 4", "Tecnologia"));
             
         findViewById(R.id.cardHistory3).setOnClickListener(v -> 
-            openServiceDetail("Pizza Grande", "Pizzaria Napolitana", "R$ 45,00", "08/04/2026"));
+            openServiceDetail("Pizza Grande", "Pizzaria Napolitana", "R$ 45,00", "08/04/2026", "Rua Gastronômica, 10 - Bairro Alto", "Alimentação"));
     }
 
     // Abre a tela de detalhes do serviço passando as informações
-    private void openServiceDetail(String name, String provider, String price, String date) {
+    private void openServiceDetail(String name, String provider, String price, String date, String address, String category) {
         Intent intent = new Intent(this, ServiceDetailActivity.class);
         intent.putExtra("serviceName", name);
         intent.putExtra("providerName", provider);
         intent.putExtra("price", price);
         intent.putExtra("date", date);
+        intent.putExtra("address", address);
+        intent.putExtra("category", category);
         startActivity(intent);
     }
 }
