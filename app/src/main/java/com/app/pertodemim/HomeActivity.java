@@ -28,6 +28,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
+
 // Tela principal do aplicativo que exibe o mapa e filtros de busca
 public class HomeActivity extends AppCompatActivity implements OnMapReadyCallback {
 
@@ -41,6 +45,18 @@ public class HomeActivity extends AppCompatActivity implements OnMapReadyCallbac
     // Listas para armazenar as opções de filtro marcadas pelo usuário
     private final List<String> selectedAvaliacoes = new ArrayList<>();
     private final List<String> selectedCategorias = new ArrayList<>();
+
+    @Override
+    public void onMapReady(@NonNull GoogleMap googleMap) {
+        // Coordenadas de Fortaleza, CE
+        LatLng fortaleza = new LatLng(-3.7319, -38.5267);
+
+        // Adiciona um marcador em Fortaleza
+        googleMap.addMarker(new MarkerOptions().position(fortaleza).title("Fortaleza, Ceará"));
+
+        // Move a câmera para lá com zoom
+        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(fortaleza, 12f));
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -363,8 +379,4 @@ public class HomeActivity extends AppCompatActivity implements OnMapReadyCallbac
         });
     }
 
-    @Override
-    public void onMapReady(@NonNull GoogleMap googleMap) {
-        // Função chamada pelo Android quando o mapa termina de carregar
-    }
 }
