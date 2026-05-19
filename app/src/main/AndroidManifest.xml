@@ -17,10 +17,10 @@
         android:usesCleartextTraffic="true"
         android:theme="@style/Theme.PertoDeMim">
 
-        <!-- ADICIONAR A CHAVE DO GOOGLE MAPS AQUI PRA FAZER O MAPA -->
+        <!-- Chave do Google Maps carregada via local.properties para segurança -->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyBlmxarVlBg5mbpJWTnuullGhcW6th1-Ow" />
+            android:value="${MAPS_API_KEY}" />
 
         <activity
             android:name=".MainActivity"
