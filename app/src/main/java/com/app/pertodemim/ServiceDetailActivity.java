@@ -26,6 +26,8 @@ public class ServiceDetailActivity extends AppCompatActivity {
         String provider = getIntent().getStringExtra("providerName");
         String price = getIntent().getStringExtra("price");
         String date = getIntent().getStringExtra("date");
+        String address = getIntent().getStringExtra("address");
+        String category = getIntent().getStringExtra("category");
 
         // Preenche a tela com os dados (ou usa valores padrão se vier vazio)
         if (name != null) tvServiceName.setText(name);
@@ -35,6 +37,9 @@ public class ServiceDetailActivity extends AppCompatActivity {
             tvTotal.setText(price);
         }
         if (date != null) tvDate.setText("Realizado em " + date);
+        
+        TextView tvAddress = findViewById(R.id.tvProviderAddress);
+        if (address != null) tvAddress.setText(address);
 
         // Botão voltar
         ImageView btnBack = findViewById(R.id.btnBack);
@@ -49,7 +54,14 @@ public class ServiceDetailActivity extends AppCompatActivity {
 
         // Botão para contratar novamente
         findViewById(R.id.btnRepetirPedido).setOnClickListener(v -> {
-            startActivity(new Intent(this, PaymentActivity.class));
+            Intent intent = new Intent(this, PaymentActivity.class);
+            intent.putExtra("serviceName", name);
+            intent.putExtra("providerName", provider);
+            intent.putExtra("price", price);
+            intent.putExtra("address", address);
+            intent.putExtra("category", category);
+            intent.putExtra("duration", "1h 30min"); // Exemplo de duração
+            startActivity(intent);
         });
     }
 }

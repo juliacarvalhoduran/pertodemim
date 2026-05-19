@@ -20,7 +20,7 @@
         <!-- ADICIONAR A CHAVE DO GOOGLE MAPS AQUI PRA FAZER O MAPA -->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="SUA_CHAVE_AQUI" />
+            android:value="AIzaSyBlmxarVlBg5mbpJWTnuullGhcW6th1-Ow" />
 
         <activity
             android:name=".MainActivity"
